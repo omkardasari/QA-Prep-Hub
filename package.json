@@ -1,0 +1,20 @@
+{
+  "name": "automation-qa-interview-tracker",
+  "version": "1.0.0",
+  "description": "Interactive dashboard for Automation QA interview preparation, trend tracking, and readiness planning.",
+  "main": "index.html",
+  "scripts": {
+    "serve": "node server.js"
+  },
+  "keywords": [
+    "qa",
+    "automation-testing",
+    "interview-preparation",
+    "selenium",
+    "playwright",
+    "api-testing",
+    "testing-dashboard"
+  ],
+  "author": "",
+  "license": "MIT"
+}
