@@ -3,1565 +3,998 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Automation QA Interview Trend Tracker</title>
+  <title>QA Interview Intelligence</title>
   <style>
     :root {
-      --ink: #18221d;
-      --muted: #68746c;
-      --paper: #f4efe3;
-      --panel: #fffdf8;
-      --soft: #fff8ea;
-      --line: #ddd5c4;
-      --teal: #0b7771;
-      --teal-soft: #e5f4ef;
-      --brick: #b64b2a;
-      --gold: #d79c24;
-      --green: #337a50;
-      --blue: #2f6685;
-      --shadow: 0 18px 50px rgba(42, 37, 25, 0.13);
+      --bg: #f5f7fc; 
+      --panel: #ffffff; 
+      --panel-soft: rgba(255, 255, 255, 0.92);
+      --line: #dfe4f3; 
+      --text: #141b2f; 
+      --muted: #606a86; 
+      --blue: #3f5ee8;
+      --blue-soft: #edf1ff; 
+      --purple: #6f52d9; 
+      --green: #06a77d; 
+      --orange: #ff9f43;
+      --red: #ef5d73; 
+      --radius: 12px; 
+      --shadow: 0 4px 14px rgba(20, 32, 90, 0.06);
+      --glass: blur(12px);
     }
 
-    * {
-      box-sizing: border-box;
+    /* PREMIUM DARK THEME */
+    body[data-theme="dark"] {
+      --bg: #0f172a; 
+      --panel: #1e293b; 
+      --panel-soft: rgba(30, 41, 59, 0.8);
+      --line: #334155; 
+      --text: #f8fafc; 
+      --muted: #94a3b8; 
+      --blue: #60a5fa; 
+      --blue-soft: #1e293b;
+      --purple: #a78bfa; 
+      --shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
     }
 
+    * { box-sizing: border-box; }
     body {
-      margin: 0;
-      color: var(--ink);
-      font-family: "Aptos", "Segoe UI", sans-serif;
-      background:
-        linear-gradient(120deg, rgba(11, 119, 113, 0.18), transparent 32%),
-        linear-gradient(300deg, rgba(182, 75, 42, 0.12), transparent 30%),
-        linear-gradient(180deg, #f9f6ec 0%, #edf3ec 100%);
+      margin: 0; font-family: Inter, "Segoe UI", Roboto, sans-serif; color: var(--text);
+      background: radial-gradient(circle at 8% 0%, rgba(77, 107, 255, 0.1), transparent 26%),
+                  radial-gradient(circle at 92% 12%, rgba(133, 91, 255, 0.08), transparent 22%),
+                  var(--bg);
+      transition: background 0.3s ease, color 0.3s ease;
     }
+    [hidden] { display: none !important; }
 
-    button, textarea, input, select {
-      font: inherit;
+    .auth-gate {
+      position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 20px;
+      background: radial-gradient(circle at 10% 0%, rgba(63, 94, 232, 0.2), transparent 40%),
+                  radial-gradient(circle at 90% 10%, rgba(111, 82, 217, 0.15), transparent 34%),
+                  rgba(15, 23, 42, 0.7);
+      backdrop-filter: var(--glass);
     }
-
-    button {
-      cursor: pointer;
+    .auth-card {
+      width: min(460px, 100%); border: 1px solid var(--line); border-radius: 16px;
+      background: var(--panel); box-shadow: var(--shadow);
+      padding: 24px; display: grid; gap: 16px;
     }
+    .auth-title { margin: 0; font-size: 22px; font-weight: 800; }
+    .auth-subtitle { margin: 0; color: var(--muted); font-size: 13px; }
+    .auth-grid { display: grid; gap: 12px; }
+    .auth-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .auth-status { min-height: 16px; font-size: 12px; color: var(--muted); }
+    .auth-meta { border-top: 1px solid var(--line); padding-top: 12px; color: var(--muted); font-size: 11px; }
 
-    .app {
-      min-height: 100vh;
-      padding: 0;
-    }
-
-    .shell {
-      display: grid;
-      grid-template-columns: 410px minmax(0, 1fr);
-      gap: 0;
-      width: 100%;
-      min-height: 100vh;
-      margin: 0;
-    }
-
-    .sidebar, .workspace, .panel, .trend-card, .question-row {
-      background: rgba(255, 253, 248, 0.92);
-      border: 1px solid var(--line);
-      box-shadow: none;
-    }
-
+    .app { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 100vh; }
     .sidebar {
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      padding: 24px;
-      overflow: auto;
-      border-width: 0 1px 0 0;
-      background:
-        linear-gradient(180deg, rgba(255, 253, 248, 0.96), rgba(238, 246, 239, 0.96)),
-        var(--panel);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    h1, h2, h3 {
-      margin: 0;
-      font-family: Georgia, "Times New Roman", serif;
-      line-height: 1.03;
-    }
-
-    h1 {
-      font-size: 28px;
-    }
-
-    h2 {
-      font-size: 40px;
-    }
-
-    h3 {
-      font-size: 19px;
-    }
-
-    p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-
-    label, .eyebrow {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0;
-      text-transform: uppercase;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      min-height: 28px;
-      padding: 4px 10px;
-      border: 1px solid var(--line);
-      color: var(--teal);
-      background: var(--teal-soft);
-      font-size: 12px;
-      font-weight: 900;
-      text-transform: uppercase;
-      white-space: nowrap;
-    }
-
-    textarea {
-      width: 100%;
-      min-height: 250px;
-      margin-top: 8px;
-      padding: 13px;
-      border: 1px solid var(--line);
-      border-radius: 0;
-      color: var(--ink);
-      background: var(--soft);
-      line-height: 1.45;
-      outline: none;
-      resize: vertical;
-    }
-
-    textarea:focus, input:focus, select:focus {
-      border-color: var(--teal);
-      box-shadow: 0 0 0 3px rgba(11, 119, 113, 0.14);
-    }
-
-    input, select {
-      width: 100%;
-      min-height: 40px;
-      padding: 0 11px;
-      border: 1px solid var(--line);
-      border-radius: 0;
-      color: var(--ink);
-      background: var(--soft);
-      outline: none;
-    }
-
-    .actions, .mini-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 9px;
-    }
-
-    .btn {
-      min-height: 42px;
-      border: 1px solid transparent;
-      font-weight: 900;
-      transition: transform 140ms ease, box-shadow 140ms ease;
-    }
-
-    .btn:hover {
-      transform: translateY(-1px);
-    }
-
-    .btn.primary {
-      color: white;
-      background: var(--teal);
-      box-shadow: 0 10px 20px rgba(11, 119, 113, 0.24);
-    }
-
-    .btn.secondary {
-      color: var(--ink);
-      background: transparent;
-      border-color: var(--line);
-    }
-
-    .btn.warning {
-      color: white;
-      background: var(--brick);
-    }
-
-    .filters {
-      display: grid;
-      gap: 8px;
-    }
-
-    .filter-chip {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      width: 100%;
-      padding: 9px 10px;
-      border: 1px solid var(--line);
-      background: var(--soft);
-      color: var(--ink);
-      font-size: 13px;
-      text-align: left;
-    }
-
-    .filter-chip.active {
-      border-color: var(--teal);
-      background: var(--teal-soft);
-      color: var(--teal);
-      font-weight: 900;
-    }
-
-    .workspace {
-      min-height: 100vh;
-      padding: 26px;
-      border: 0;
-      background: transparent;
-    }
-
-    .hero {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 470px;
-      gap: 18px;
-      align-items: start;
-      padding: 22px;
-      border: 1px solid var(--line);
-      background:
-        linear-gradient(135deg, rgba(255, 253, 248, 0.96), rgba(229, 244, 239, 0.92)),
-        var(--panel);
-      box-shadow: var(--shadow);
-    }
-
-    .hero p {
-      max-width: 790px;
-      margin-top: 10px;
-    }
-
-    .metrics {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .metric {
-      padding: 13px;
-      border: 1px solid var(--line);
-      background: var(--soft);
-    }
-
-    .metric strong {
-      display: block;
-      font-size: 30px;
-      line-height: 1;
-    }
-
-    .metric span {
-      display: block;
-      margin-top: 6px;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 800;
-      text-transform: uppercase;
-    }
-
-    .tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: 16px 0;
-      padding: 8px;
-      border: 1px solid var(--line);
-      background: rgba(255, 253, 248, 0.75);
-    }
-
-    .tab {
-      min-height: 38px;
-      padding: 0 14px;
-      border: 1px solid var(--line);
-      background: var(--soft);
-      color: var(--muted);
-      font-weight: 900;
-    }
-
-    .tab.active {
-      border-color: var(--teal);
-      background: var(--teal);
-      color: white;
-    }
-
-    .trend-strip, .status-strip {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      min-height: 30px;
-      padding: 5px 10px;
-      border: 1px solid var(--line);
-      background: var(--soft);
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 800;
-    }
-
-    .pill.hot {
-      border-color: rgba(182, 75, 42, 0.35);
-      color: var(--brick);
-      background: #fff0e9;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
-    }
-
-    .panel {
-      padding: 16px;
-      box-shadow: var(--shadow);
-    }
-
-    .trend-card {
-      min-height: 235px;
-      padding: 16px;
-      overflow: hidden;
-      box-shadow: var(--shadow);
-    }
-
-    .command-grid {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 14px;
-      margin-bottom: 14px;
-    }
-
-    .next-action {
-      display: grid;
-      gap: 12px;
-      padding: 18px;
-      border: 1px solid var(--line);
-      background: #14261f;
-      color: white;
-      box-shadow: var(--shadow);
-    }
-
-    .next-action p, .next-action .eyebrow {
-      color: rgba(255, 255, 255, 0.76);
-    }
-
-    .next-action strong {
-      font-size: 22px;
-      line-height: 1.15;
-    }
-
-    .target-panel {
-      display: grid;
-      gap: 10px;
-      padding: 18px;
-      border: 1px solid var(--line);
-      background: rgba(255, 253, 248, 0.9);
-      box-shadow: var(--shadow);
-    }
-
-    .target-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .weak-list {
-      display: grid;
-      gap: 8px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .weak-list li {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 9px 10px;
-      border: 1px solid var(--line);
-      background: var(--soft);
-      color: var(--ink);
-      font-size: 13px;
-      font-weight: 800;
-    }
-
-    .card-head {
-      display: flex;
-      align-items: start;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    .card-head p {
-      margin-top: 5px;
-      font-size: 13px;
-    }
-
-    .priority {
-      min-width: 82px;
-      padding: 5px 8px;
-      color: white;
-      background: var(--brick);
-      font-size: 11px;
-      font-weight: 900;
-      text-align: center;
-      text-transform: uppercase;
-      white-space: nowrap;
-    }
-
-    .priority.medium {
-      color: #2f220b;
-      background: var(--gold);
-    }
-
-    .priority.core {
-      background: var(--green);
-    }
-
-    .progress {
-      height: 9px;
-      margin: 12px 0;
-      overflow: hidden;
-      border: 1px solid var(--line);
-      background: #eee4d2;
-    }
-
-    .progress span {
-      display: block;
-      height: 100%;
-      background: linear-gradient(90deg, var(--teal), var(--green));
-    }
-
-    .questions {
-      display: grid;
-      gap: 9px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .question-row {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-      padding: 12px;
-      background: var(--soft);
-      box-shadow: none;
-    }
-
-    .question-text {
-      color: #2b3830;
-      font-size: 14px;
-      line-height: 1.4;
-    }
-
-    .row-tools {
-      display: grid;
-      grid-template-columns: 130px 110px 1fr auto;
-      gap: 8px;
-      align-items: center;
-    }
+      border-right: 1px solid var(--line); background: var(--panel-soft);
+      padding: 20px 16px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+      backdrop-filter: var(--glass);
+    }
+    .logo { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 24px; font-size: 16px; font-weight: 700; }
+    .logo-left { display: flex; align-items: center; gap: 10px; }
+    .logo-mark { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(145deg, var(--blue), var(--purple)); }
+    .sidebar-collapse { width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; color: var(--muted); }
+
+    .nav-list { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+    .nav-btn {
+      width: 100%; border: 0; background: transparent; display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 8px; color: var(--muted); font-weight: 600; cursor: pointer; transition: 0.2s;
+    }
+    .nav-dot { width: 6px; height: 6px; border-radius: 999px; background: #b4bfdc; }
+    .nav-btn:hover, .nav-btn.active { background: var(--blue-soft); color: var(--blue); }
+    .nav-btn.active .nav-dot, .nav-btn:hover .nav-dot { background: var(--blue); }
+
+    .sidebar-tools { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); display: grid; gap: 10px; }
+    .sidebar-group { border: 1px solid var(--line); border-radius: 10px; background: var(--panel); overflow: hidden; }
+    .sidebar-group-toggle {
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+      border: 0; border-bottom: 1px solid var(--line); background: transparent; padding: 10px 12px;
+      font-size: 12px; font-weight: 700; cursor: pointer; color: var(--text);
+    }
+    .sidebar-group.collapsed .sidebar-group-body { display: none; }
+    .sidebar-group-body { padding: 12px; display: grid; gap: 10px; }
+
+    .label { display: block; font-size: 11px; color: var(--muted); font-weight: 700; margin-bottom: 6px; text-transform: uppercase; }
+    input, select, textarea {
+      width: 100%; border: 1px solid var(--line); border-radius: 8px; background: var(--panel);
+      min-height: 36px; padding: 8px 12px; outline: none; color: var(--text); transition: 0.2s;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(63, 94, 232, 0.1); }
+    textarea { min-height: 80px; resize: vertical; }
+    .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .btn { border-radius: 8px; min-height: 36px; font-weight: 600; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
+    .btn-primary { color: #fff; background: linear-gradient(120deg, var(--blue), var(--purple)); }
+    .btn-muted { border: 1px solid var(--line); background: var(--panel); color: var(--text); }
+    .btn-danger { color: #fff; background: var(--red); }
+    .status-message { font-size: 12px; color: var(--muted); min-height: 18px; }
+
+    .content { padding: 20px; display: grid; gap: 16px; }
+    .header {
+      display: grid; grid-template-columns: minmax(220px, 1fr) auto auto; gap: 12px; align-items: center;
+      background: var(--panel-soft); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 12px 16px; backdrop-filter: var(--glass);
+    }
+    .icon-btn { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; color: var(--text); }
+    .theme-btn { position: relative; overflow: hidden; }
+    .theme-glyph { position: absolute; inset: 0; display: grid; place-items: center; transition: transform 0.3s; }
+    .theme-glyph.sun { opacity: 1; } .theme-glyph.moon { opacity: 0; transform: translateY(120%); }
+    body[data-theme="dark"] .theme-glyph.sun { opacity: 0; transform: translateY(-120%); }
+    body[data-theme="dark"] .theme-glyph.moon { opacity: 1; transform: translateY(0); }
+
+    .profile { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 6px 12px; }
+    .avatar { width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(145deg, var(--blue), var(--purple)); }
+
+    .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+    .kpi-card { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; background: var(--panel); display: grid; gap: 8px; box-shadow: var(--shadow); }
+    .kpi-head { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; font-weight: 600; }
+    .kpi-value { font-size: 32px; font-weight: 800; }
+    .kpi-growth { font-size: 12px; color: var(--green); font-weight: 600; }
+
+    .section { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; background: var(--panel); box-shadow: var(--shadow); }
+    .section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    h2 { font-size: 16px; font-weight: 700; margin: 0; }
+
+    .hero-card { border-radius: var(--radius); padding: 20px; background: linear-gradient(135deg, var(--blue), var(--purple)); color: #fff; display: grid; gap: 12px; box-shadow: 0 8px 20px rgba(63, 94, 232, 0.3); }
+    .hero-action { width: 160px; border: 1px solid rgba(255, 255, 255, 0.3); background: rgba(255, 255, 255, 0.1); color: #fff; border-radius: 8px; cursor: pointer; font-weight: 600; padding: 8px; }
+
+    .analytics { display: grid; grid-template-columns: 280px minmax(0, 1fr) 260px; gap: 16px; }
+    .ring-wrap { display: grid; justify-items: center; padding: 10px; }
+    .ring { width: 150px; height: 150px; border-radius: 50%; display: grid; place-items: center; background: conic-gradient(var(--blue) 0deg, var(--purple) 0deg, #e9edff 0deg); }
+    .ring-inner { width: 120px; height: 120px; border-radius: 50%; background: var(--panel); display: grid; place-items: center; border: 1px solid var(--line); text-align: center; }
+
+    .trend-bars { display: grid; align-items: end; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; min-height: 150px; padding: 12px; border: 1px solid var(--line); background: var(--panel-soft); border-radius: 12px; }
+    .bar-col { display: grid; gap: 8px; justify-items: center; align-content: end; }
+    .bar { width: 24px; border-radius: 6px; background: linear-gradient(180deg, var(--blue), var(--purple)); }
+
+    .metrics-list { display: grid; gap: 10px; }
+    .metric-row { display: flex; justify-content: space-between; border: 1px solid var(--line); border-radius: 10px; padding: 12px; background: var(--panel-soft); font-size: 13px; }
+
+    .topics-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .topic-card { border: 1px solid var(--line); border-radius: 10px; padding: 16px; background: var(--panel-soft); transition: 0.2s; }
+    .topic-card:hover { border-color: var(--blue); transform: translateY(-2px); }
+    .topic-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .topic-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+    table { width: 100%; border-collapse: collapse; min-width: 800px; background: var(--panel); }
+    th, td { padding: 12px; border-bottom: 1px solid var(--line); text-align: left; font-size: 13px; }
+    th { color: var(--muted); font-weight: 700; background: var(--panel-soft); text-transform: uppercase; font-size: 11px; }
+
+    .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); font-size: 10px; background: var(--blue-soft); color: var(--blue); font-weight: 700; }
+    .actions { display: flex; gap: 8px; align-items: center; }
+    .mini { border: 1px solid var(--line); border-radius: 6px; min-height: 28px; padding: 0 8px; background: var(--panel); font-size: 11px; cursor: pointer; color: var(--text); }
+    .mini.active { border-color: var(--orange); background: rgba(255, 159, 67, 0.1); color: var(--orange); }
+    .note-input { min-height: 28px; font-size: 12px; border-radius: 6px; }
+
+    .feed { display: grid; gap: 8px; }
+    .feed-item { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: var(--panel-soft); display: flex; justify-content: space-between; font-size: 12px; }
 
-    .note-input {
-      min-height: 36px;
-      padding: 0 10px;
-      font-size: 13px;
-    }
-
-    .mini-btn {
-      min-height: 36px;
-      padding: 0 10px;
-      border: 1px solid var(--line);
-      color: var(--ink);
-      background: #fffdf8;
-      font-size: 13px;
-      font-weight: 900;
-    }
-
-    .mini-btn.active {
-      border-color: var(--gold);
-      color: #4a3408;
-      background: #fff4cf;
-    }
-
-    .empty {
-      padding: 18px;
-      border: 1px dashed var(--line);
-      color: var(--muted);
-      background: rgba(255, 248, 234, 0.8);
-      font-size: 14px;
-      line-height: 1.45;
-    }
-
-    .insight-list {
-      display: grid;
-      gap: 10px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .insight-list li {
-      padding: 12px;
-      border-left: 4px solid var(--teal);
-      background: var(--soft);
-      color: #2e3933;
-      line-height: 1.45;
-    }
-
-    .heatmap {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .heat-cell {
-      padding: 14px;
-      border: 1px solid var(--line);
-      background: var(--soft);
-    }
-
-    .heat-cell strong {
-      display: block;
-      font-size: 24px;
-    }
-
-    .heat-cell span {
-      display: block;
-      margin-top: 6px;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 800;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .source-note {
-      margin-top: auto;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.45;
-    }
-
-    .import-box {
-      display: grid;
-      gap: 9px;
-      padding: 12px;
-      border: 1px solid var(--line);
-      background: rgba(255, 248, 234, 0.72);
-    }
-
-    .import-box textarea {
-      min-height: 120px;
-      margin-top: 0;
-    }
+    .empty { padding: 20px; border: 1px dashed var(--line); border-radius: 12px; color: var(--muted); font-size: 13px; background: var(--panel-soft); text-align: center; }
 
-    .status-message {
-      min-height: 18px;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 800;
-      line-height: 1.35;
-    }
-
-    @media (max-width: 1180px) {
-      .shell, .hero {
-        grid-template-columns: 1fr;
-      }
-
-      .workspace {
-        order: 1;
-      }
-
-      .sidebar {
-        position: static;
-        height: auto;
-        order: 2;
-        border-width: 1px 0 0;
-      }
-    }
+    body.sidebar-collapsed .app { grid-template-columns: 70px minmax(0, 1fr); }
+    body.sidebar-collapsed .logo-text, body.sidebar-collapsed .nav-label, body.sidebar-collapsed .sidebar-tools { display: none; }
+    body.sidebar-collapsed .nav-btn { justify-content: center; padding: 10px; }
 
-    @media (max-width: 780px) {
-      .app {
-        padding: 12px;
-      }
-
-      .sidebar, .workspace {
-        padding: 15px;
-      }
-
-      h2 {
-        font-size: 31px;
-      }
-
-      .grid, .metrics, .heatmap, .actions, .mini-actions, .row-tools {
-        grid-template-columns: 1fr;
-      }
-
-      .command-grid, .target-grid {
-        grid-template-columns: 1fr;
-      }
-    }
+    .app-view { transition: opacity 0.2s ease; }
   </style>
 </head>
-<body>
+<body data-theme="light">
+  <section id="authGate" class="auth-gate">
+    <div class="auth-card">
+      <div class="auth-top">
+        <h1 class="auth-title">QA Interview Intelligence</h1>
+        <p class="auth-subtitle">Login to continue. This starter auth is local-only.</p>
+      </div>
+      <div class="auth-grid">
+        <div>
+          <label class="label" for="authEmail">Work Email</label>
+          <input id="authEmail" type="email" placeholder="you@company.com">
+        </div>
+        <div>
+          <label class="label" for="authPassword">Password</label>
+          <input id="authPassword" type="password" placeholder="Enter password">
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-top: 5px;">
+          <input type="checkbox" id="useDemoCheck" style="width: auto; min-height: auto; cursor: pointer;">
+          <label for="useDemoCheck" style="margin: 0; cursor: pointer; font-size: 12px; color: var(--muted);">Use Demo Account</label>
+        </div>
+      </div>
+      <div class="auth-actions">
+        <button id="loginBtn" class="btn btn-primary">Login</button>
+        <button id="createAccountBtn" class="btn btn-muted">Create Account</button>
+      </div>
+      <div class="auth-status" id="authStatus"></div>
+      <div class="auth-meta">
+        Demo account: <strong>qa.demo@tracker.com</strong> / <strong>Qa@12345</strong>
+      </div>
+    </div>
+  </section>
+
   <main class="app">
-    <section class="shell">
-      <aside class="sidebar">
-        <div class="brand">
-          <h1>QA Tracker</h1>
-          <span class="badge">Interactive</span>
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="logo-left">
+          <div class="logo-mark"></div>
+          <div class="logo-text">QA Career Tracker</div>
         </div>
+        <button id="sidebarCollapseBtn" class="sidebar-collapse">◀</button>
+      </div>
 
-        <div>
-          <label for="questionInput">Paste Questions</label>
-          <textarea id="questionInput" placeholder="Paste new questions here. They will be added to your saved tracker without deleting old questions."></textarea>
-        </div>
+      <ul class="nav-list">
+        <li><button class="nav-btn active" data-view="dashboard"><span class="nav-dot"></span><span class="nav-label">Dashboard</span></button></li>
+        <li><button class="nav-btn" data-view="tracker"><span class="nav-dot"></span><span class="nav-label">Question Tracker</span></button></li>
+        <li><button class="nav-btn" data-view="trends"><span class="nav-dot"></span><span class="nav-label">Trend Highlights</span></button></li>
+        <li><button class="nav-btn" data-view="readiness"><span class="nav-dot"></span><span class="nav-label">Readiness</span></button></li>
+        <li><button class="nav-btn" data-view="studyplan"><span class="nav-dot"></span><span class="nav-label">Study Plan</span></button></li>
+        <li><button class="nav-btn" data-view="automation"><span class="nav-dot"></span><span class="nav-label">Automation</span></button></li>
+        <li><button class="nav-btn" data-view="reports"><span class="nav-dot"></span><span class="nav-label">Reports</span></button></li>
+        <li><button class="nav-btn" data-view="settings"><span class="nav-dot"></span><span class="nav-label">Settings</span></button></li>
+      </ul>
 
-        <div class="actions">
-          <button class="btn primary" id="segregateBtn">Add Questions</button>
-          <button class="btn secondary" id="sampleBtn">Load Sample</button>
-        </div>
-
-        <div class="mini-actions">
-          <button class="btn secondary" id="exportBtn">Export JSON</button>
-          <button class="btn secondary" id="exportCsvBtn">Export CSV</button>
-        </div>
-
-        <div class="import-box">
-          <label for="linkedinUrl">LinkedIn Post Import</label>
-          <input id="linkedinUrl" type="url" placeholder="Paste LinkedIn post URL">
-          <div class="mini-actions">
-            <button class="btn secondary" id="fetchLinkedinBtn">Fetch Link</button>
-            <button class="btn primary" id="extractLinkedinBtn">Extract Text</button>
-          </div>
-          <textarea id="linkedinText" placeholder="If LinkedIn blocks fetch, paste the post text here. The app will extract interview questions and add them neatly."></textarea>
-          <div class="status-message" id="linkedinStatus"></div>
-        </div>
-
-        <div class="mini-actions">
-          <button class="btn warning" id="resetBtn">Reset</button>
-        </div>
-
-        <div>
-          <label for="searchInput">Search</label>
-          <input id="searchInput" type="search" placeholder="API, Playwright, CI, flaky...">
-        </div>
-
-        <div>
-          <label for="statusFilter">Preparation Status</label>
-          <select id="statusFilter">
-            <option value="all">All Status</option>
-            <option value="new">New</option>
-            <option value="studying">Studying</option>
-            <option value="revise">Revise</option>
-            <option value="ready">Ready</option>
-          </select>
-        </div>
-
-        <div>
-          <span class="eyebrow">Focus Area</span>
-          <div class="filters" id="filterList"></div>
-        </div>
-
-        <p class="source-note">
-          Progress is saved in this browser with localStorage. LinkedIn fetch works only for public pages that allow local access; pasted post text is the most reliable import path.
-        </p>
-      </aside>
-
-      <section class="workspace">
-        <header class="hero">
-          <div>
-            <span class="badge">Automation QA Interview Dashboard</span>
-            <h2>Track questions, trends, readiness, and interview highlights.</h2>
-              <p>
-              Add interview questions batch by batch, then use this as your live preparation board: classify by latest trends, mark study status, add notes, star risky questions, search weak areas, and watch readiness improve.
-            </p>
-          </div>
-          <div class="metrics">
-            <div class="metric"><strong id="totalQuestions">0</strong><span>Total Questions</span></div>
-            <div class="metric"><strong id="readyQuestions">0</strong><span>Ready</span></div>
-            <div class="metric"><strong id="highPriority">0</strong><span>High Trend</span></div>
-            <div class="metric"><strong id="readinessScore">0%</strong><span>Readiness</span></div>
-          </div>
-        </header>
-
-        <nav class="tabs" aria-label="Dashboard views">
-          <button class="tab active" data-view="overview">Overview</button>
-          <button class="tab" data-view="tracker">Question Tracker</button>
-          <button class="tab" data-view="trends">Trend Highlights</button>
-          <button class="tab" data-view="plan">Prep Plan</button>
-        </nav>
-
-        <div class="trend-strip">
-          <span class="pill hot">Hot: Playwright</span>
-          <span class="pill hot">Hot: API Automation</span>
-          <span class="pill hot">Hot: CI/CD</span>
-          <span class="pill">Flaky Test Debugging</span>
-          <span class="pill">AI-Assisted QA</span>
-          <span class="pill">Risk-Based Testing</span>
-          <span class="pill">Project Scenarios</span>
-        </div>
-
-        <section class="command-grid">
-          <article class="next-action">
-            <span class="eyebrow">Next Best Action</span>
-            <strong id="nextAction">Paste questions to generate your first prep move.</strong>
-            <p id="nextActionDetail">The dashboard will point you toward the highest-impact weak area based on latest automation QA interview patterns.</p>
-          </article>
-          <article class="target-panel">
+      <section class="sidebar-tools">
+        <section class="sidebar-group" data-group="intake">
+          <button class="sidebar-group-toggle" data-group-toggle="intake">
+            <span>Question Intake</span>
+            <span class="chevron">▾</span>
+          </button>
+          <div class="sidebar-group-body">
             <div>
-              <span class="eyebrow">Interview Target</span>
-              <p>Use this to keep preparation tied to the role you actually want.</p>
+              <label class="label" for="questionInput">Paste Questions</label>
+              <textarea id="questionInput" placeholder="Paste questions here..."></textarea>
             </div>
-            <div class="target-grid">
-              <input id="targetRole" placeholder="Target role: Automation QA Tester">
-              <input id="targetCompany" placeholder="Company or domain">
-              <input id="interviewDate" type="date">
-              <select id="experienceLevel">
-                <option value="fresher">Fresher / Entry</option>
-                <option value="mid">2-5 Years</option>
-                <option value="senior">Senior QA</option>
+            <div class="btn-grid">
+              <button id="segregateBtn" class="btn btn-primary">Segregate</button>
+              <button id="sampleBtn" class="btn btn-muted">Load Sample</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="sidebar-group collapsed" data-group="imports">
+          <button class="sidebar-group-toggle" data-group-toggle="imports">
+            <span>LinkedIn & File Import</span>
+            <span class="chevron">▾</span>
+          </button>
+          <div class="sidebar-group-body">
+            <div>
+              <label class="label" for="linkedinUrl">LinkedIn URL</label>
+              <input id="linkedinUrl" type="url" placeholder="https://www.linkedin.com/posts/...">
+            </div>
+            <div class="btn-grid">
+              <button id="fetchLinkedinBtn" class="btn btn-muted">Fetch Link</button>
+              <button id="extractLinkedinBtn" class="btn btn-primary">Extract Text</button>
+            </div>
+            <div>
+              <label class="label" for="fileInput">Upload File</label>
+              <input id="fileInput" type="file" accept=".pdf,.doc,.docx,.txt">
+            </div>
+            <button id="importFileBtn" class="btn btn-muted">Extract From File</button>
+            <div>
+              <label class="label" for="linkedinText">LinkedIn Text (Manual)</label>
+              <textarea id="linkedinText" placeholder="Paste text manually..."></textarea>
+            </div>
+            <div class="status-message" id="linkedinStatus"></div>
+          </div>
+        </section>
+
+        <section class="sidebar-group collapsed" data-group="manage">
+          <button class="sidebar-group-toggle" data-group-toggle="manage">
+            <span>Export & Filters</span>
+            <span class="chevron">▾</span>
+          </button>
+          <div class="sidebar-group-body">
+            <div class="btn-grid">
+              <button id="exportBtn" class="btn btn-muted">JSON</button>
+              <button id="exportCsvBtn" class="btn btn-muted">CSV</button>
+            </div>
+            <div class="btn-grid">
+              <button id="exportPdfBtn" class="btn btn-muted">PDF</button>
+              <button id="exportXlsxBtn" class="btn btn-muted">XLSX</button>
+            </div>
+            <div class="btn-grid" style="margin-top:8px;">
+               <button id="cleanNoiseBtn" class="btn btn-muted" style="color:var(--blue); border-color:var(--blue);">🧹 Clean Noise</button>
+               <button id="resetBtn" class="btn btn-danger">Reset</button>
+            </div>
+            <div style="margin-top:10px;">
+              <label class="label" for="statusFilter">Status Filter</label>
+              <select id="statusFilter">
+                <option value="all">All Status</option>
+                <option value="new">New</option>
+                <option value="studying">Studying</option>
+                <option value="revise">Revise</option>
+                <option value="ready">Ready</option>
               </select>
             </div>
+            <div style="margin-top:10px;">
+              <label class="label" for="filterList">Topic Filter</label>
+              <div id="filterList"></div>
+            </div>
+          </div>
+        </section>
+      </section>
+    </aside>
+
+    <section class="content">
+      <header class="header">
+        <input id="searchInput" type="search" placeholder="Search questions, notes, topics...">
+        <button class="icon-btn theme-btn" id="themeToggleBtn">
+          <span class="theme-glyph sun">☀</span>
+          <span class="theme-glyph moon">🌙</span>
+        </button>
+        <button class="icon-btn">N</button>
+        <div class="profile">
+          <div class="avatar"></div>
+          <strong id="profileEmail">Profile</strong>
+          <button id="logoutBtn" class="mini">Logout</button>
+        </div>
+      </header>
+
+      <div id="view-dashboard" class="app-view">
+        <section class="grid-4">
+          <article class="kpi-card">
+            <div class="kpi-head"><span>Total Questions</span><span>Q</span></div>
+            <div class="kpi-value" id="totalQuestions">0</div>
+            <div class="kpi-growth">+8% week-over-week</div>
+          </article>
+          <article class="kpi-card">
+            <div class="kpi-head"><span>Ready Questions</span><span>R</span></div>
+            <div class="kpi-value" id="readyQuestions">0</div>
+            <div class="kpi-growth">+6% velocity</div>
+          </article>
+          <article class="kpi-card">
+            <div class="kpi-head"><span>Trending Topics</span><span>T</span></div>
+            <div class="kpi-value" id="highPriority">0</div>
+            <div class="kpi-growth">Active Mix</div>
+          </article>
+          <article class="kpi-card">
+            <div class="kpi-head"><span>Readiness Score</span><span>S</span></div>
+            <div class="kpi-value" id="readinessScore">0%</div>
+            <div class="kpi-growth">Target Score</div>
           </article>
         </section>
 
-        <section id="overviewView">
-          <div class="grid" id="categoryGrid"></div>
+        <section class="section" style="margin-top:12px;">
+          <div class="section-head"><h2>Recommendations</h2></div>
+          <article class="hero-card">
+            <h2 style="color:white">Next Best Action</h2>
+            <p id="nextAction" style="color:rgba(255,255,255,0.9)">Focus on API Testing and Framework Design next.</p>
+            <p id="nextActionDetail" style="color:rgba(255,255,255,0.7)">Priority comes from your weak topics.</p>
+            <button id="viewQuestionsBtn" class="hero-action">View Questions</button>
+          </article>
         </section>
+      </div>
 
-        <section id="trackerView" class="hidden">
-          <div class="status-strip">
-            <span class="pill">New: <strong id="newCount">0</strong></span>
-            <span class="pill">Studying: <strong id="studyingCount">0</strong></span>
-            <span class="pill">Revise: <strong id="reviseCount">0</strong></span>
-            <span class="pill">Ready: <strong id="readyCount">0</strong></span>
-            <span class="pill hot">Starred: <strong id="starredCount">0</strong></span>
+      <div id="view-tracker" class="app-view" style="display:none;">
+        <section class="section">
+          <div class="section-head"><h2>Question Tracker</h2></div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th style="color:var(--muted)">Question</th><th style="color:var(--muted)">Topic</th><th style="color:var(--muted)">Difficulty</th><th style="color:var(--muted)">Status</th><th style="color:var(--muted)">Reviewed</th><th style="color:var(--muted)">Actions</th></tr>
+              </thead>
+              <tbody id="questionTracker"></tbody>
+            </table>
           </div>
-          <ul class="questions" id="questionTracker"></ul>
-          <div class="empty" id="trackerEmpty">Paste questions and click Segregate to start tracking them.</div>
+          <div id="trackerEmpty" class="empty">No questions found. Add some from the sidebar!</div>
         </section>
+      </div>
 
-        <section id="trendsView" class="hidden">
-          <div class="grid">
-            <article class="panel">
-              <h3>Latest Interview Highlights</h3>
-              <ul class="insight-list">
-                <li><strong>Modern automation:</strong> Expect Selenium plus Playwright or Cypress comparison, not only Selenium syntax.</li>
-                <li><strong>API depth:</strong> REST validation, authentication, schema checks, and backend confidence are frequent automation topics.</li>
-                <li><strong>DevOps QA:</strong> Interviewers ask how tests run in CI/CD, how failures are reported, and how suites stay fast.</li>
-                <li><strong>Reliability:</strong> Flaky test diagnosis, deterministic waits, traces, screenshots, and root-cause thinking matter a lot.</li>
-                <li><strong>AI-aware QA:</strong> Teams want judgment around AI-generated tests, self-healing, defect triage, and review discipline.</li>
-              </ul>
-            </article>
-            <article class="panel">
-              <h3>Your Trend Coverage</h3>
-              <div class="heatmap" id="heatmap"></div>
-            </article>
-            <article class="panel">
-              <h3>Weak Areas To Attack</h3>
-              <ul class="weak-list" id="weakAreas"></ul>
-            </article>
-          </div>
+      <div id="view-trends" class="app-view" style="display:none;">
+        <section class="section">
+          <div class="section-head"><h2>Trending Interview Topics</h2></div>
+          <div class="topics-grid" id="topicCards"></div>
         </section>
+      </div>
 
-        <section id="planView" class="hidden">
-          <div class="grid">
-            <article class="panel">
-              <h3>Suggested Study Order</h3>
-              <ul class="insight-list" id="studyPlan"></ul>
-            </article>
-            <article class="panel">
-              <h3>Interview Answer Formula</h3>
-              <ul class="insight-list">
-                <li><strong>Context:</strong> Start with the project, application type, and testing goal.</li>
-                <li><strong>Approach:</strong> Explain framework, data, locators, API checks, pipeline, or debugging method.</li>
-                <li><strong>Tradeoff:</strong> Mention why you chose that approach and what risk it reduced.</li>
-                <li><strong>Evidence:</strong> Finish with metrics, reports, fewer flaky tests, faster feedback, or release confidence.</li>
-              </ul>
-            </article>
+      <div id="view-readiness" class="app-view" style="display:none;">
+        <section class="section">
+          <div class="section-head">
+            <h2>Readiness Analytics</h2>
+            <span class="muted">Circular score, weekly trend, and metrics</span>
+          </div>
+          <div class="analytics">
+            <div class="ring-wrap">
+              <div class="ring" id="readinessRing">
+                <div class="ring-inner">
+                  <strong id="readinessPercent">0%</strong>
+                  <small class="muted">Prepared</small>
+                </div>
+              </div>
+            </div>
+            <div class="trend-bars" id="weeklyTrend"></div>
+            <div class="metrics-list">
+              <div class="metric-row"><span>New</span><strong id="newCount">0</strong></div>
+              <div class="metric-row"><span>Studying</span><strong id="studyingCount">0</strong></div>
+              <div class="metric-row"><span>Revise</span><strong id="reviseCount">0</strong></div>
+              <div class="metric-row"><span>Ready</span><strong id="readyCount">0</strong></div>
+              <div class="metric-row"><span>Starred Risks</span><strong id="starredCount">0</strong></div>
+            </div>
           </div>
         </section>
+      </div>
+
+      <div id="view-studyplan" class="app-view" style="display:none;">
+        <section class="section">
+          <div class="section-head"><h2>Your Study Plan</h2></div>
+          <div id="studyPlan"></div>
+        </section>
+      </div>
+
+      <div id="view-automation" class="app-view" style="display:none;">
+        <section class="section">
+          <div class="section-head"><h2>Automation Details</h2></div>
+          <p class="muted">Section for automation tools and configurations.</p>
+        </section>
+      </div>
+
+      <div id="view-reports" class="app-view" style="display:none;">
+        <section class="section">
+          <div class="section-head"><h2>Reports</h2></div>
+          <p class="muted">Use the sidebar export buttons to download reports.</p>
+        </section>
+      </div>
+
+      <div id="view-settings" class="app-view" style="display:none;">
+        <section class="section">
+          <div class="section-head"><h2>Interview Target Setup</h2></div>
+          <div class="grid-4">
+            <div><label class="label">Target Role</label><input id="targetRole"></div>
+            <div><label class="label">Company</label><input id="targetCompany"></div>
+            <div><label class="label">Date</label><input id="interviewDate" type="date"></div>
+            <div><label class="label">Level</label><select id="experienceLevel">
+              <option value="fresher">Fresher</option><option value="mid">Mid</option><option value="senior">Senior</option>
+            </select></div>
+          </div>
+        </section>
+      </div>
+
+      <section class="section" style="margin-top: 20px;">
+        <div class="section-head"><h2>Activity Feed</h2></div>
+        <div class="feed" id="activityFeed"></div>
       </section>
     </section>
   </main>
 
   <script>
-    const STORAGE_KEY = "automationQaInterviewDashboardV2";
+    const STORAGE_KEY = "qaInterviewIntelligenceStateV2";
+    const THEME_KEY = "qaInterviewIntelligenceThemeV1";
+    const AUTH_SESSION_KEY = "qaInterviewIntelligenceAuthSessionV1";
+    const AUTH_USERS_KEY = "qaInterviewIntelligenceAuthUsersV1";
+    const SIDEBAR_COLLAPSE_KEY = "qaInterviewIntelligenceSidebarCollapsedV1";
+    const SIDEBAR_GROUPS_KEY = "qaInterviewIntelligenceSidebarGroupsV1";
 
     const categories = [
-      {
-        id: "modern-web",
-        title: "Modern Web Automation",
-        priority: "high",
-        highlight: "Most visible trend. Be ready to compare Selenium, Playwright, and Cypress with practical tradeoffs.",
-        description: "Playwright, Selenium, Cypress, browser behavior, network mocking, parallel execution, and cross-browser coverage.",
-        keywords: ["playwright", "selenium", "cypress", "webdriver", "browser", "headless", "cross browser", "parallel", "grid", "shadow dom", "iframe", "alert", "window", "tab", "network interception", "mock", "locator", "xpath", "css selector"]
-      },
-      {
-        id: "api-contract",
-        title: "API & Contract Testing",
-        priority: "high",
-        highlight: "Very common for automation QA roles because companies expect UI plus API confidence.",
-        description: "REST automation, payload validation, auth, schema checks, Postman, RestAssured, and service reliability.",
-        keywords: ["api", "rest", "postman", "rest assured", "http", "status code", "json", "schema", "contract", "pact", "oauth", "token", "request", "response", "payload", "graphql"]
-      },
-      {
-        id: "ci-devops",
-        title: "CI/CD & DevOps QA",
-        priority: "high",
-        highlight: "Interviewers increasingly ask how automation supports release pipelines and fast feedback.",
-        description: "Jenkins, GitHub Actions, pipeline strategy, test stages, reporting, containers, and release confidence.",
-        keywords: ["ci", "cd", "cicd", "jenkins", "github actions", "gitlab", "pipeline", "docker", "kubernetes", "build", "deployment", "maven", "gradle", "npm", "report", "allure", "extent"]
-      },
-      {
-        id: "reliability",
-        title: "Flaky Test & Debugging",
-        priority: "high",
-        highlight: "Strong differentiator. Good answers show engineering judgment, not just tool knowledge.",
-        description: "Root-cause analysis, unstable tests, waits, logs, screenshots, traces, retries, and deterministic execution.",
-        keywords: ["flaky", "debug", "failure", "root cause", "retry", "screenshot", "trace", "log", "timeout", "stale element", "race condition", "intermittent", "stability", "maintenance", "fail", "wait"]
-      },
-      {
-        id: "automation-core",
-        title: "Automation Framework Design",
-        priority: "core",
-        highlight: "Baseline skill. Prepare a clear story about your framework structure and maintainability choices.",
-        description: "Architecture, framework design, page objects, assertions, test data, reporting, and maintainability.",
-        keywords: ["automation", "framework", "page object", "pom", "assert", "data driven", "keyword driven", "hybrid", "testng", "junit", "pytest", "bdd", "cucumber", "gherkin", "architecture"]
-      },
-      {
-        id: "ai-testing",
-        title: "AI-Assisted Testing",
-        priority: "medium",
-        highlight: "Emerging trend. Focus on safe use: generation, review, self-healing, and defect triage.",
-        description: "AI test generation, self-healing scripts, defect triage, prompt use, and governance of AI-created checks.",
-        keywords: ["ai", "gen ai", "chatgpt", "llm", "self healing", "autonomous", "agent", "test generation", "predictive", "defect prediction", "copilot", "machine learning"]
-      },
-      {
-        id: "test-strategy",
-        title: "Test Strategy & Risk",
-        priority: "high",
-        highlight: "Senior-style topic. Shows you can think about quality, risk, and business impact.",
-        description: "Risk-based testing, test planning, prioritization, coverage, regression strategy, and business impact.",
-        keywords: ["strategy", "risk", "priority", "coverage", "regression", "smoke", "sanity", "test plan", "test case", "scenario", "requirement", "quality", "shift left", "agile", "scrum"]
-      },
-      {
-        id: "mobile-cloud",
-        title: "Mobile & Cloud Execution",
-        priority: "medium",
-        highlight: "Useful for companies running tests across browsers, devices, and cloud grids.",
-        description: "Appium, real device grids, BrowserStack, LambdaTest, device coverage, and cloud execution strategy.",
-        keywords: ["mobile", "appium", "android", "ios", "device", "browserstack", "lambdatest", "saucelabs", "cloud", "real device", "emulator", "simulator"]
-      },
-      {
-        id: "performance-security",
-        title: "Performance & Security Basics",
-        priority: "medium",
-        highlight: "Usually not deep for automation QA, but basic non-functional awareness helps.",
-        description: "Load testing, response time, accessibility, basic security awareness, and quality gates.",
-        keywords: ["performance", "load", "stress", "jmeter", "k6", "security", "owasp", "vulnerability", "response time", "throughput", "latency", "accessibility", "a11y"]
-      },
-      {
-        id: "behavioral",
-        title: "Behavioral & Project Scenarios",
-        priority: "core",
-        highlight: "Do not ignore this. Scenario answers often decide whether tool knowledge feels real.",
-        description: "Real project experience, conflict handling, defect communication, ownership, and stakeholder collaboration.",
-        keywords: ["project", "experience", "challenge", "team", "developer", "manager", "defect", "bug", "jira", "communication", "conflict", "deadline", "production", "release", "client", "stakeholder"]
-      },
-      {
-        id: "manual-foundation",
-        title: "Manual QA Foundation",
-        priority: "core",
-        highlight: "Still asked to confirm fundamentals behind automation decisions.",
-        description: "SDLC, STLC, defect lifecycle, test design techniques, severity, priority, and QA basics.",
-        keywords: ["manual", "sdlc", "stlc", "defect life cycle", "bug life cycle", "severity", "boundary", "equivalence", "exploratory", "negative testing", "positive testing", "uat"]
-      },
-      {
-        id: "needs-review",
-        title: "Needs Manual Review",
-        priority: "medium",
-        highlight: "Questions that need your judgment or a custom bucket.",
-        description: "Questions that do not strongly match a trend bucket yet.",
-        keywords: []
-      }
+      { id: "selenium", title: "Selenium", priority: "high", difficulty: "Medium", keywords: ["selenium", "webdriver", "xpath", "css selector", "stale element", "grid"] },
+      { id: "playwright", title: "Playwright", priority: "high", difficulty: "Medium", keywords: ["playwright", "trace", "locator", "page fixture", "browser context"] },
+      { id: "testng", title: "TestNG / JUnit", priority: "core", difficulty: "Medium", keywords: ["testng", "junit", "@test", "@before", "@after", "dataprovider", "parameterized"] },
+      { id: "manual", title: "Manual Testing", priority: "core", difficulty: "Low", keywords: ["manual testing", "test case", "test scenario", "smoke test", "sanity", "regression cycle"] },
+      { id: "scenario", title: "Scenario-Based", priority: "core", difficulty: "High", keywords: ["real-time scenario", "production issue", "root cause", "defect leakage", "incident", "war room"] },
+      { id: "api", title: "API Testing", priority: "high", difficulty: "High", keywords: ["api", "rest", "postman", "schema", "auth", "status code", "contract testing", "soap"] },
+      { id: "framework", title: "Framework Design", priority: "high", difficulty: "High", keywords: ["framework", "pom", "architecture", "design pattern", "hybrid framework", "reusable utility"] },
+      { id: "cicd", title: "CI/CD", priority: "core", difficulty: "Medium", keywords: ["pipeline", "cicd", "ci/cd", "jenkins", "github actions", "gitlab ci", "quality gate"] },
+      { id: "sql", title: "SQL / DB Validation", priority: "core", difficulty: "Medium", keywords: ["sql", "database", "join", "query", "data validation", "backend validation"] },
+      { id: "performance", title: "Performance Testing", priority: "medium", difficulty: "Medium", keywords: ["performance", "load test", "jmeter", "throughput", "latency", "stress test"] },
+      { id: "mobile", title: "Mobile Testing", priority: "medium", difficulty: "Medium", keywords: ["appium", "mobile testing", "android", "ios", "device farm"] },
+      { id: "ai", title: "AI in Testing", priority: "medium", difficulty: "Medium", keywords: ["ai", "llm", "genai", "prompt", "copilot"] },
+      { id: "risk", title: "Risk-Based Testing", priority: "core", difficulty: "High", keywords: ["risk", "priority", "coverage", "impact analysis"] },
+      { id: "other", title: "General QA", priority: "medium", difficulty: "Low", keywords: [] }
     ];
 
+    const topicOrder = ["selenium", "playwright", "testng", "manual", "scenario", "api", "framework", "cicd", "sql", "performance", "mobile", "ai"];
     const sampleQuestions = [
-      "Explain your automation framework architecture.",
-      "How do you handle flaky tests in Selenium or Playwright?",
-      "What is the difference between implicit wait, explicit wait, and fluent wait?",
-      "How do you automate REST API testing and validate JSON schema?",
-      "How do you integrate automation tests into Jenkins pipeline?",
-      "What are the advantages of Playwright over Selenium?",
-      "How would you use AI tools in QA without blindly trusting generated tests?",
-      "How do you prioritize regression test cases before a release?",
-      "Tell me about a difficult bug you found and how you communicated it.",
-      "How do you run automation tests on BrowserStack or real devices?",
-      "How do you debug stale element reference exceptions?",
-      "What performance checks should an automation QA engineer understand?"
+      "How do you design a scalable Selenium framework with TestNG for cross-browser execution?",
+      "How do you handle dynamic XPath and stale element issues in Selenium?",
+      "How do you structure TestNG suites, groups, and DataProvider for maintainable automation?",
+      "How do you prepare manual test scenarios for checkout and payment workflow?",
+      "Explain a real production defect scenario and how you performed root cause analysis.",
+      "How do you validate API schema and authentication in regression automation?",
+      "How do you integrate UI and API suites into CI/CD with quality gates?",
+      "How do you validate backend data with SQL for UI/API test results?",
+      "How do you prioritize testing effort using risk-based testing?"
     ];
 
-    const state = {
-      records: [],
-      activeFilter: "all",
-      activeView: "overview",
-      statusFilter: "all",
-      query: "",
-      target: {
-        role: "",
-        company: "",
-        interviewDate: "",
-        experienceLevel: "fresher"
-      }
-    };
+    const statusWeight = { new: 0.15, studying: 0.45, revise: 0.7, ready: 1 };
 
     const els = {
+      authGate: document.getElementById("authGate"),
+      authEmail: document.getElementById("authEmail"),
+      authPassword: document.getElementById("authPassword"),
+      useDemoCheck: document.getElementById("useDemoCheck"),
+      authStatus: document.getElementById("authStatus"),
+      loginBtn: document.getElementById("loginBtn"),
+      createAccountBtn: document.getElementById("createAccountBtn"),
       questionInput: document.getElementById("questionInput"),
+      segregateBtn: document.getElementById("segregateBtn"),
+      sampleBtn: document.getElementById("sampleBtn"),
+      linkedinUrl: document.getElementById("linkedinUrl"),
+      fetchLinkedinBtn: document.getElementById("fetchLinkedinBtn"),
+      extractLinkedinBtn: document.getElementById("extractLinkedinBtn"),
+      fileInput: document.getElementById("fileInput"),
+      importFileBtn: document.getElementById("importFileBtn"),
+      linkedinText: document.getElementById("linkedinText"),
+      linkedinStatus: document.getElementById("linkedinStatus"),
+      exportBtn: document.getElementById("exportBtn"),
+      exportCsvBtn: document.getElementById("exportCsvBtn"),
+      exportPdfBtn: document.getElementById("exportPdfBtn"),
+      exportXlsxBtn: document.getElementById("exportXlsxBtn"),
+      resetBtn: document.getElementById("resetBtn"),
+      cleanNoiseBtn: document.getElementById("cleanNoiseBtn"),
       searchInput: document.getElementById("searchInput"),
       statusFilter: document.getElementById("statusFilter"),
-      categoryGrid: document.getElementById("categoryGrid"),
       filterList: document.getElementById("filterList"),
-      tracker: document.getElementById("questionTracker"),
-      trackerEmpty: document.getElementById("trackerEmpty"),
-      heatmap: document.getElementById("heatmap"),
-      studyPlan: document.getElementById("studyPlan"),
       totalQuestions: document.getElementById("totalQuestions"),
       readyQuestions: document.getElementById("readyQuestions"),
       highPriority: document.getElementById("highPriority"),
       readinessScore: document.getElementById("readinessScore"),
+      readinessPercent: document.getElementById("readinessPercent"),
+      readinessRing: document.getElementById("readinessRing"),
+      weeklyTrend: document.getElementById("weeklyTrend"),
       newCount: document.getElementById("newCount"),
       studyingCount: document.getElementById("studyingCount"),
       reviseCount: document.getElementById("reviseCount"),
       readyCount: document.getElementById("readyCount"),
-      starredCount: document.getElementById("starredCount")
-      ,
+      starredCount: document.getElementById("starredCount"),
       nextAction: document.getElementById("nextAction"),
       nextActionDetail: document.getElementById("nextActionDetail"),
-      weakAreas: document.getElementById("weakAreas"),
+      viewQuestionsBtn: document.getElementById("viewQuestionsBtn"),
+      topicCards: document.getElementById("topicCards"),
+      questionTracker: document.getElementById("questionTracker"),
+      trackerEmpty: document.getElementById("trackerEmpty"),
+      studyPlan: document.getElementById("studyPlan"),
+      activityFeed: document.getElementById("activityFeed"),
       targetRole: document.getElementById("targetRole"),
       targetCompany: document.getElementById("targetCompany"),
       interviewDate: document.getElementById("interviewDate"),
       experienceLevel: document.getElementById("experienceLevel"),
-      linkedinUrl: document.getElementById("linkedinUrl"),
-      linkedinText: document.getElementById("linkedinText"),
-      linkedinStatus: document.getElementById("linkedinStatus")
+      themeToggleBtn: document.getElementById("themeToggleBtn"),
+      profileEmail: document.getElementById("profileEmail"),
+      logoutBtn: document.getElementById("logoutBtn"),
+      sidebarCollapseBtn: document.getElementById("sidebarCollapseBtn"),
+      sidebarGroupToggles: document.querySelectorAll("[data-group-toggle]"),
+      sidebarGroups: document.querySelectorAll(".sidebar-group")
     };
 
-    function parseQuestions(rawText) {
-      return rawText
-        .split(/\n+/)
-        .map((line) => line.replace(/^\s*(?:[-*•]|\d+[\).])\s*/, "").trim())
-        .filter(Boolean);
+    const state = {
+      records: [],
+      query: "",
+      statusFilter: "all",
+      activeFilter: "all",
+      target: { role: "", company: "", interviewDate: "", experienceLevel: "fresher" },
+      activity: []
+    };
+
+    function applyTheme(theme) {
+      const value = theme === "dark" ? "dark" : "light";
+      document.body.setAttribute("data-theme", value);
+      localStorage.setItem(THEME_KEY, value);
     }
 
-    function extractQuestions(rawText) {
-      const normalized = rawText
-        .replace(/\r/g, "\n")
-        .replace(/[“”]/g, '"')
-        .replace(/[‘’]/g, "'")
-        .replace(/\s+\?/g, "?");
+    function loadTheme() {
+      const savedTheme = localStorage.getItem(THEME_KEY);
+      applyTheme(savedTheme === "dark" ? "dark" : "light");
+    }
 
-      const questions = [];
-      normalized.split(/\n+/).forEach((rawLine) => {
-        const line = cleanQuestionCandidate(rawLine);
-        const questionMatches = line.match(/[^?]+?\?/g);
+    function getAuthUsers() {
+      const defaultUsers = [{ email: "qa.demo@tracker.com", password: "Qa@12345" }];
+      try {
+        const parsed = JSON.parse(localStorage.getItem(AUTH_USERS_KEY) || "null");
+        if (Array.isArray(parsed) && parsed.length) return parsed;
+      } catch (_) {}
+      localStorage.setItem(AUTH_USERS_KEY, JSON.stringify(defaultUsers));
+      return defaultUsers;
+    }
 
-        if (questionMatches) {
-          questionMatches.map(cleanQuestionCandidate).forEach((question) => questions.push(question));
+    function setAuthStatus(message, isError = false) {
+      if (!els.authStatus) return;
+      els.authStatus.textContent = message;
+      els.authStatus.style.color = isError ? "var(--red)" : "var(--muted)";
+    }
+
+    function applyAuthSession(session) {
+      if (session) {
+        localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session));
+        if (els.authGate) els.authGate.hidden = true;
+        if (els.profileEmail) els.profileEmail.textContent = session.email;
+      } else {
+        localStorage.removeItem(AUTH_SESSION_KEY);
+        if (els.authGate) els.authGate.hidden = false;
+      }
+    }
+
+    function loadAuthSession() {
+      try {
+        const session = JSON.parse(localStorage.getItem(AUTH_SESSION_KEY) || "null");
+        if (session && session.email) {
+          applyAuthSession(session);
           return;
         }
+      } catch (_) {}
+      applyAuthSession(null);
+    }
 
-        if (/^(explain|describe|tell me|what|why|how|when|where|which|write|design|create|differentiate|compare|can you)\b/i.test(line)) {
-          questions.push(line);
+    function loginWithEmailPassword() {
+      const email = (els.authEmail.value || "").trim().toLowerCase();
+      const password = (els.authPassword.value || "").trim();
+      if (!email || !password) { setAuthStatus("Enter credentials.", true); return; }
+      const users = getAuthUsers();
+      const match = users.find((user) => user.email === email && user.password === password);
+      if (!match) { setAuthStatus("Invalid credentials.", true); return; }
+      applyAuthSession({ email, at: new Date().toISOString() });
+      setAuthStatus("");
+    }
+
+    function createLocalAccount() {
+      const email = (els.authEmail.value || "").trim().toLowerCase();
+      const password = (els.authPassword.value || "").trim();
+      if (!email || password.length < 6) { setAuthStatus("Invalid email or password.", true); return; }
+      const users = getAuthUsers();
+      if (users.some((u) => u.email === email)) { setAuthStatus("Account exists.", true); return; }
+      users.push({ email, password });
+      localStorage.setItem(AUTH_USERS_KEY, JSON.stringify(users));
+      applyAuthSession({ email, at: new Date().toISOString() });
+    }
+
+    function applySidebarCollapsed(collapsed) {
+      document.body.classList.toggle("sidebar-collapsed", !!collapsed);
+      if (els.sidebarCollapseBtn) els.sidebarCollapseBtn.textContent = collapsed ? "▶" : "◀";
+      localStorage.setItem(SIDEBAR_COLLAPSE_KEY, collapsed ? "1" : "0");
+    }
+
+    function loadSidebarCollapsed() {
+      const collapsed = localStorage.getItem(SIDEBAR_COLLAPSE_KEY) === "1";
+      applySidebarCollapsed(collapsed);
+    }
+
+    function saveSidebarGroups() {
+      const payload = {};
+      els.sidebarGroups.forEach((group) => {
+        const key = group.getAttribute("data-group");
+        payload[key] = group.classList.contains("collapsed");
+      });
+      localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(payload));
+    }
+
+    function loadSidebarGroups() {
+      let saved = {};
+      try { saved = JSON.parse(localStorage.getItem(SIDEBAR_GROUPS_KEY) || "{}"); } catch (_) {}
+      els.sidebarGroups.forEach((group) => {
+        const key = group.getAttribute("data-group");
+        group.classList.toggle("collapsed", Boolean(saved[key]));
+      });
+    }
+
+    function normalize(text) { return (text || "").trim().toLowerCase(); }
+    function questionId(question) { return normalize(question).replace(/[^a-z0-9]+/g, "-"); }
+
+    function looksLikeQuestionOrPrompt(line) {
+      if (!line || line.length < 15) return false;
+      const blacklist = ["linkedin", "posted on", "save this post", "follow me", "connect with me", "resume review", "referral", "lpa", "job search", "experience sharing", "introduced myself", "explained my", "discussed the", "hope this helps", "thanks for sharing", "interview experience", "round 1", "round 2", "round 3", "technical round", "hr round", "training starting soon", "register now", "free demo"];
+      const lowerLine = line.toLowerCase();
+      if (blacklist.some(word => lowerLine.includes(word))) return false;
+      if (/^(section|topic|round|guide|highlight|concept)\s*\d*[:.]?$/i.test(line)) return false;
+      if (line.trim().endsWith("?")) return true;
+      const questionStarters = /\b(explain|how|what|why|when|where|which|write|design|create|differentiate|compare|can you)\b/i;
+      if (questionStarters.test(line)) {
+        const statementWords = /\b(i learned|i noticed|i realized|i found|this is how)\b/i;
+        if (statementWords.test(line)) return false;
+        return true;
+      }
+      return false;
+    }
+
+    function cleanupQuestionText(line) {
+      let cleaned = line.replace(/\s+\?/g, "?").replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
+      return cleaned.length < 12 ? "" : cleaned;
+    }
+
+    function parseQuestions(text) {
+      return (text || "").split(/\r?\n+/).map(l => cleanupQuestionText(l)).filter(l => looksLikeQuestionOrPrompt(l));
+    }
+
+    function extractQuestions(text) {
+      const lines = (text || "").split(/\r?\n+/).map(l => cleanupQuestionText(l)).filter(Boolean);
+      const extracted = [];
+      lines.forEach(line => {
+        if (line.includes("?")) {
+          line.split("?").forEach(chunk => {
+            const part = cleanupQuestionText(`${chunk.trim()}?`);
+            if (looksLikeQuestionOrPrompt(part)) extracted.push(part);
+          });
+        } else if (looksLikeQuestionOrPrompt(line)) {
+          extracted.push(line);
         }
       });
-
-      return uniqueQuestions(questions.filter((question) => question.length > 8));
-    }
-
-    function cleanQuestionCandidate(value) {
-      return value
-        .replace(/^\s*(?:[-*•]|\d+[\).]|Q\d*[:.)-])\s*/i, "")
-        .replace(/^.*?\b(explain|describe|tell me|what|why|how|when|where|which|write|design|create|differentiate|compare|can you)\b/i, "$1")
-        .replace(/\s+/g, " ")
-        .trim();
-    }
-
-    function uniqueQuestions(questions) {
-      const seen = new Set();
-      return questions
-        .map((question) => question.replace(/\s+/g, " ").trim())
-        .filter((question) => {
-          const key = question.toLowerCase();
-          if (!question || seen.has(key)) {
-            return false;
-          }
-          seen.add(key);
-          return true;
-        });
-    }
-
-    function questionId(question) {
-      let hash = 0;
-      for (let index = 0; index < question.length; index += 1) {
-        hash = ((hash << 5) - hash) + question.charCodeAt(index);
-        hash |= 0;
-      }
-      return `q-${Math.abs(hash)}`;
-    }
-
-    function scoreQuestion(question, category) {
-      const normalized = question.toLowerCase();
-      return category.keywords.reduce((score, keyword) => normalized.includes(keyword) ? score + keyword.length : score, 0);
+      return [...new Set(extracted)];
     }
 
     function classifyQuestion(question) {
-      const scored = categories
-        .filter((category) => category.id !== "needs-review")
-        .map((category) => ({ category, score: scoreQuestion(question, category) }))
-        .sort((first, second) => second.score - first.score);
-
-      return scored[0]?.score > 0 ? scored[0].category.id : "needs-review";
+      const text = normalize(question);
+      for (const cat of categories) {
+        if (cat.keywords.some(k => text.includes(k))) return cat.id;
+      }
+      return "other";
     }
 
-    function categoryById(id) {
-      return categories.find((category) => category.id === id) || categories[categories.length - 1];
+    function categoryById(id) { return categories.find((category) => category.id === id) || categories[categories.length - 1]; }
+
+    function pushActivity(message) {
+      state.activity.unshift({ id: `${Date.now()}`, message, time: new Date().toISOString() });
+      state.activity = state.activity.slice(0, 18);
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ records: state.records, target: state.target, activity: state.activity }));
     }
 
     function loadState() {
       try {
-        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-        if (saved?.records) {
-          state.records = saved.records;
-      }
-        if (saved?.target) {
-          state.target = { ...state.target, ...saved.target };
-          els.targetRole.value = state.target.role;
-          els.targetCompany.value = state.target.company;
-          els.interviewDate.value = state.target.interviewDate;
-          els.experienceLevel.value = state.target.experienceLevel;
-        }
-      } catch {
-        state.records = [];
-      }
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+        if (!saved) return;
+        state.records = Array.isArray(saved.records) ? saved.records : [];
+        state.target = saved.target || state.target;
+        state.activity = Array.isArray(saved.activity) ? saved.activity : [];
+        if (els.targetRole) els.targetRole.value = state.target.role || "";
+        if (els.targetCompany) els.targetCompany.value = state.target.company || "";
+        if (els.interviewDate) els.interviewDate.value = state.target.interviewDate || "";
+        if (els.experienceLevel) els.experienceLevel.value = state.target.experienceLevel || "fresher";
+      } catch (_) { state.records = []; }
     }
 
-    function saveState() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ records: state.records, target: state.target }));
+    function countByStatus() {
+      return state.records.reduce((acc, record) => { acc[record.status] += 1; return acc; }, { new: 0, studying: 0, revise: 0, ready: 0 });
     }
 
-    function segregateQuestions() {
-      const result = addQuestions(parseQuestions(els.questionInput.value));
-      els.questionInput.value = "";
-      setImportStatus(`Added ${result.added} question(s). Ignored ${result.duplicates} duplicate(s).`);
+    function readinessPercent() {
+      if (!state.records.length) return 0;
+      const weighted = state.records.reduce((sum, record) => sum + (statusWeight[record.status] || 0), 0);
+      return Math.round((weighted / state.records.length) * 100);
     }
 
-    function addQuestions(questions) {
-      const existingById = new Map(state.records.map((record) => [record.id, record]));
-      const incomingRecords = uniqueQuestions(questions).map((question) => {
+    function filteredRecords() {
+      return state.records.filter((record) => {
+        const category = categoryById(record.categoryId);
+        const matchesQuery = !state.query || record.question.toLowerCase().includes(state.query) || (record.note || "").toLowerCase().includes(state.query) || category.title.toLowerCase().includes(state.query);
+        const matchesStatus = state.statusFilter === "all" || record.status === state.statusFilter;
+        const matchesFilter = state.activeFilter === "all" || record.categoryId === state.activeFilter;
+        return matchesQuery && matchesStatus && matchesFilter;
+      });
+    }
+
+    function addQuestions(questions, sourceLabel = "manual input") {
+      const existing = new Map(state.records.map((record) => [record.id, record]));
+      const incoming = [...new Set(questions)];
+      let added = 0, duplicates = 0;
+
+      incoming.forEach((question) => {
         const id = questionId(question);
-        const existing = existingById.get(id);
-        return {
-          id,
-          question,
-          categoryId: classifyQuestion(question),
-          status: existing?.status || "new",
-          starred: existing?.starred || false,
-          note: existing?.note || ""
-        };
+        if (existing.has(id)) { duplicates += 1; return; }
+        const record = { id, question, categoryId: classifyQuestion(question), status: "new", starred: false, note: "", reviewedAt: new Date().toISOString() };
+        state.records.push(record);
+        existing.set(id, record);
+        added += 1;
       });
-
-      let added = 0;
-      let duplicates = 0;
-      incomingRecords.forEach((record) => {
-        if (!existingById.has(record.id)) {
-          state.records.push(record);
-          existingById.set(record.id, record);
-          added += 1;
-        } else {
-          duplicates += 1;
-        }
-      });
-
+      if (added > 0) pushActivity(`Added ${added} questions from ${sourceLabel}.`);
       saveState();
       render();
       return { added, duplicates };
     }
 
-    function groupedRecords() {
-      const map = new Map(categories.map((category) => [category.id, []]));
-      filteredRecords().forEach((record) => map.get(record.categoryId).push(record));
-      return map;
+    function removeQuestion(id) {
+      state.records = state.records.filter((record) => record.id !== id);
+      pushActivity("Removed one question.");
+      saveState();
+      render();
     }
 
-    function filteredRecords() {
-      return state.records.filter((record) => {
-        const matchesSearch = !state.query || record.question.toLowerCase().includes(state.query) || record.note.toLowerCase().includes(state.query);
-        const matchesCategory = state.activeFilter === "all" || record.categoryId === state.activeFilter;
-        const matchesStatus = state.statusFilter === "all" || record.status === state.statusFilter;
-        return matchesSearch && matchesCategory && matchesStatus;
+    function updateRecord(id, patch) {
+      state.records = state.records.map((record) => record.id === id ? { ...record, ...patch, reviewedAt: new Date().toISOString() } : record);
+      saveState();
+      render();
+    }
+
+    function renderFilters() {
+      const filterItems = [{ id: "all", title: "All Topics" }, ...categories.map((category) => ({ id: category.id, title: category.title }))];
+      els.filterList.innerHTML = filterItems.map((item) => {
+        const count = item.id === "all" ? state.records.length : state.records.filter((record) => record.categoryId === item.id).length;
+        const activeClass = state.activeFilter === item.id ? "btn btn-primary" : "btn btn-muted";
+        return `<button class="${activeClass}" data-filter="${item.id}" style="width:100%;margin-bottom:6px;text-align:left;">${item.title} (${count})</button>`;
+      }).join("");
+      els.filterList.querySelectorAll("[data-filter]").forEach((button) => {
+        button.addEventListener("click", () => { state.activeFilter = button.dataset.filter; render(); });
       });
-    }
-
-    function categoryProgress(records) {
-      if (!records.length) {
-        return 0;
-      }
-      const ready = records.filter((record) => record.status === "ready").length;
-      return Math.round((ready / records.length) * 100);
     }
 
     function renderMetrics() {
       const ready = state.records.filter((record) => record.status === "ready").length;
       const highIds = categories.filter((category) => category.priority === "high").map((category) => category.id);
-      const highCount = state.records.filter((record) => highIds.includes(record.categoryId)).length;
-      const readiness = state.records.length ? Math.round((ready / state.records.length) * 100) : 0;
-      const counts = countByStatus();
+      const trendCount = state.records.filter((record) => highIds.includes(record.categoryId)).length;
+      const readiness = readinessPercent();
+      const statusCounts = countByStatus();
 
-      els.totalQuestions.textContent = state.records.length;
-      els.readyQuestions.textContent = ready;
-      els.highPriority.textContent = highCount;
+      els.totalQuestions.textContent = String(state.records.length);
+      els.readyQuestions.textContent = String(ready);
+      els.highPriority.textContent = String(trendCount);
       els.readinessScore.textContent = `${readiness}%`;
-      els.newCount.textContent = counts.new;
-      els.studyingCount.textContent = counts.studying;
-      els.reviseCount.textContent = counts.revise;
-      els.readyCount.textContent = counts.ready;
-      els.starredCount.textContent = state.records.filter((record) => record.starred).length;
+      els.readinessPercent.textContent = `${readiness}%`;
+      els.readinessRing.style.background = `conic-gradient(var(--blue) 0deg, var(--purple) ${Math.round((readiness/100)*360)}deg, #e9edff ${Math.round((readiness/100)*360)}deg)`;
+      els.newCount.textContent = String(statusCounts.new);
+      els.studyingCount.textContent = String(statusCounts.studying);
+      els.reviseCount.textContent = String(statusCounts.revise);
+      els.readyCount.textContent = String(statusCounts.ready);
+      els.starredCount.textContent = String(state.records.filter((record) => record.starred).length);
     }
 
-    function countByStatus() {
-      return state.records.reduce((counts, record) => {
-        counts[record.status] += 1;
-        return counts;
-      }, { new: 0, studying: 0, revise: 0, ready: 0 });
+    function renderWeeklyTrend() {
+      const base = readinessPercent();
+      const points = [Math.max(5, base - 24), Math.max(8, base - 14), Math.max(10, base - 7), Math.max(12, base)];
+      els.weeklyTrend.innerHTML = points.map((value, index) => `
+        <div class="bar-col">
+          <div class="bar" style="height:${Math.max(18, value * 1.2)}px"></div>
+          <strong style="font-size:11px;color:var(--text)">${value}%</strong><span class="muted" style="font-size:10px">W${index + 1}</span>
+        </div>
+      `).join("");
     }
 
-    function renderFilters() {
-      const filters = [{ id: "all", title: "All Areas" }, ...categories.map(({ id, title }) => ({ id, title }))];
-      els.filterList.innerHTML = filters.map((filter) => {
-        const count = filter.id === "all" ? state.records.length : state.records.filter((record) => record.categoryId === filter.id).length;
-        const active = state.activeFilter === filter.id ? " active" : "";
-        return `<button class="filter-chip${active}" data-filter="${filter.id}"><span>${filter.title}</span><strong>${count}</strong></button>`;
+    function renderTopics() {
+      els.topicCards.innerHTML = topicOrder.map((id) => {
+        const cat = categoryById(id);
+        const count = state.records.filter((r) => r.categoryId === id).length;
+        return `<article class="topic-card"><div class="topic-title">${cat.title}</div><div class="topic-meta"><span>Questions</span><strong>${count}</strong></div><div class="topic-meta"><span>Difficulty</span><strong>${cat.difficulty}</strong></div></article>`;
       }).join("");
-
-      els.filterList.querySelectorAll("button").forEach((button) => {
-        button.addEventListener("click", () => {
-          state.activeFilter = button.dataset.filter;
-          render();
-        });
-      });
-    }
-
-    function renderOverview() {
-      const grouped = groupedRecords();
-      const visibleCategories = state.activeFilter === "all" ? categories : categories.filter((category) => category.id === state.activeFilter);
-
-      els.categoryGrid.innerHTML = visibleCategories.map((category) => {
-        const records = grouped.get(category.id) || [];
-        const progress = categoryProgress(records);
-        const priorityClass = category.priority === "high" ? "" : category.priority;
-        const list = records.length
-          ? `<ul class="questions">${records.slice(0, 4).map((record) => renderQuestionRow(record, false)).join("")}</ul>`
-          : `<div class="empty">No matching questions in this bucket yet.</div>`;
-
-        return `
-          <article class="trend-card">
-            <div class="card-head">
-              <div>
-                <h3>${category.title}</h3>
-                <p>${category.description}</p>
-              </div>
-              <span class="priority ${priorityClass}">${category.priority}</span>
-            </div>
-            <p><strong>Highlight:</strong> ${category.highlight}</p>
-            <div class="progress" aria-label="${progress}% ready"><span style="width:${progress}%"></span></div>
-            ${list}
-          </article>
-        `;
-      }).join("");
-      bindRowEvents();
-    }
-
-    function renderTracker() {
-      const records = filteredRecords();
-      els.tracker.innerHTML = records.map((record) => renderQuestionRow(record, true)).join("");
-      els.trackerEmpty.style.display = records.length ? "none" : "block";
-      bindRowEvents();
-    }
-
-    function renderQuestionRow(record, showCategory) {
-      const category = categoryById(record.categoryId);
-      return `
-        <li class="question-row" data-id="${record.id}">
-          <div class="question-text">${escapeHtml(record.question)}</div>
-          <div class="row-tools">
-            <select data-action="status" aria-label="Preparation status">
-              ${["new", "studying", "revise", "ready"].map((status) => `<option value="${status}" ${record.status === status ? "selected" : ""}>${statusLabel(status)}</option>`).join("")}
-            </select>
-            <button class="mini-btn ${record.starred ? "active" : ""}" data-action="star">${record.starred ? "Starred" : "Star"}</button>
-            <input class="note-input" data-action="note" value="${escapeAttr(record.note)}" placeholder="Add note or answer angle">
-            <span class="pill">${showCategory ? category.title : statusLabel(record.status)}</span>
-          </div>
-        </li>
-      `;
-    }
-
-    function bindRowEvents() {
-      document.querySelectorAll("[data-action='status']").forEach((select) => {
-        select.addEventListener("change", (event) => updateRecord(event.target.closest(".question-row").dataset.id, { status: event.target.value }));
-      });
-
-      document.querySelectorAll("[data-action='star']").forEach((button) => {
-        button.addEventListener("click", (event) => {
-          const id = event.target.closest(".question-row").dataset.id;
-          const record = state.records.find((item) => item.id === id);
-          updateRecord(id, { starred: !record.starred });
-        });
-      });
-
-      document.querySelectorAll("[data-action='note']").forEach((input) => {
-        input.addEventListener("input", (event) => updateRecord(event.target.closest(".question-row").dataset.id, { note: event.target.value }, false));
-      });
-    }
-
-    function updateRecord(id, patch, shouldRender = true) {
-      state.records = state.records.map((record) => record.id === id ? { ...record, ...patch } : record);
-      saveState();
-      if (shouldRender) {
-        render();
-      } else {
-        renderMetrics();
-      }
-    }
-
-    function renderHeatmap() {
-      els.heatmap.innerHTML = categories.filter((category) => category.id !== "needs-review").map((category) => {
-        const records = state.records.filter((record) => record.categoryId === category.id);
-        const ready = records.filter((record) => record.status === "ready").length;
-        return `
-          <div class="heat-cell">
-            <strong>${records.length}</strong>
-            <span>${category.title}</span>
-            <div class="progress"><span style="width:${categoryProgress(records)}%"></span></div>
-            <p>${ready} ready</p>
-          </div>
-        `;
-      }).join("");
-    }
-
-    function renderStudyPlan() {
-      const priorityRank = { high: 1, core: 2, medium: 3 };
-      const rows = categories
-        .filter((category) => category.id !== "needs-review")
-        .map((category) => {
-          const records = state.records.filter((record) => record.categoryId === category.id);
-          const weakCount = records.filter((record) => record.status !== "ready").length;
-          return { category, records, weakCount };
-        })
-        .filter((row) => row.records.length)
-        .sort((first, second) => {
-          const priorityDiff = priorityRank[first.category.priority] - priorityRank[second.category.priority];
-          return priorityDiff || second.weakCount - first.weakCount;
-        });
-
-      els.studyPlan.innerHTML = rows.length
-        ? rows.map((row, index) => `<li><strong>Day ${index + 1}: ${row.category.title}</strong> - ${row.weakCount} question(s) still need work. ${row.category.highlight}</li>`).join("")
-        : `<li>Load or paste questions to generate a focused study order.</li>`;
-    }
-
-    function renderNextAction() {
-      if (!state.records.length) {
-        els.nextAction.textContent = "Paste questions to generate your first prep move.";
-        els.nextActionDetail.textContent = "The dashboard will point you toward the highest-impact weak area based on latest automation QA interview patterns.";
-        return;
-      }
-
-      const weakRows = weakAreaRows();
-      const starred = state.records.filter((record) => record.starred && record.status !== "ready").length;
-      const targetText = state.target.role || "Automation QA Tester";
-
-      if (starred) {
-        els.nextAction.textContent = `Review ${starred} starred question(s) for ${targetText}.`;
-        els.nextActionDetail.textContent = "Starred questions are the ones most likely to hurt confidence in the interview. Turn each into a project-based answer with context, approach, tradeoff, and result.";
-        return;
-      }
-
-      if (weakRows.length) {
-        const top = weakRows[0];
-        els.nextAction.textContent = `Attack ${top.category.title} next.`;
-        els.nextActionDetail.textContent = `${top.weakCount} question(s) are not ready. This area has ${top.category.priority} priority in current QA automation interviews.`;
-        return;
-      }
-
-      els.nextAction.textContent = "You are interview-ready on the current question set.";
-      els.nextActionDetail.textContent = "Do one mock round: answer high-priority questions aloud, then export your progress before sharing or uploading the repo.";
-    }
-
-    function weakAreaRows() {
-      const priorityRank = { high: 1, core: 2, medium: 3 };
-      return categories
-        .filter((category) => category.id !== "needs-review")
-        .map((category) => {
-          const records = state.records.filter((record) => record.categoryId === category.id);
-          const weakCount = records.filter((record) => record.status !== "ready").length;
-          return { category, records, weakCount };
-        })
-        .filter((row) => row.weakCount > 0)
-        .sort((first, second) => {
-          const priorityDiff = priorityRank[first.category.priority] - priorityRank[second.category.priority];
-          return priorityDiff || second.weakCount - first.weakCount;
-        });
-    }
-
-    function renderWeakAreas() {
-      const rows = weakAreaRows().slice(0, 6);
-      els.weakAreas.innerHTML = rows.length
-        ? rows.map((row) => `<li><span>${row.category.title}</span><strong>${row.weakCount}</strong></li>`).join("")
-        : `<li><span>No weak areas from current filters</span><strong>0</strong></li>`;
-    }
-
-    function renderViews() {
-      ["overview", "tracker", "trends", "plan"].forEach((view) => {
-        document.getElementById(`${view}View`).classList.toggle("hidden", state.activeView !== view);
-      });
-
-      document.querySelectorAll(".tab").forEach((tab) => {
-        tab.classList.toggle("active", tab.dataset.view === state.activeView);
-      });
-    }
-
-    function render() {
-      renderMetrics();
-      renderFilters();
-      renderOverview();
-      renderTracker();
-      renderHeatmap();
-      renderStudyPlan();
-      renderNextAction();
-      renderWeakAreas();
-      renderViews();
     }
 
     function statusLabel(status) {
-      return {
-        new: "New",
-        studying: "Studying",
-        revise: "Revise",
-        ready: "Ready"
-      }[status];
+      return { new: "New", studying: "Studying", revise: "Revise", ready: "Ready" }[status];
+    }
+
+    function renderQuestionTable() {
+      const rows = filteredRecords();
+      els.questionTracker.innerHTML = rows.map((record) => {
+        const category = categoryById(record.categoryId);
+        return `
+          <tr data-id="${record.id}">
+            <td>${escapeHtml(record.question)}</td>
+            <td><span class="badge">${escapeHtml(category.title)}</span></td>
+            <td>${escapeHtml(category.difficulty)}</td>
+            <td>
+              <select data-action="status">
+                ${["new", "studying", "revise", "ready"].map((s) => `<option value="${s}" ${record.status === s ? "selected" : ""}>${statusLabel(s)}</option>`).join("")}
+              </select>
+            </td>
+            <td>${record.reviewedAt ? new Date(record.reviewedAt).toLocaleDateString() : "-"}</td>
+            <td class="actions">
+              <button class="mini ${record.starred ? "active" : ""}" data-action="star">${record.starred ? "Starred" : "Star"}</button>
+              <input class="note-input" data-action="note" value="${escapeAttr(record.note || "")}" placeholder="Note">
+              <button class="mini" data-action="delete">Delete</button>
+            </td >
+          </tr>`;
+      }).join("");
+      els.trackerEmpty.style.display = rows.length ? "none" : "block";
+
+      els.questionTracker.querySelectorAll("[data-action='status']").forEach(s => s.addEventListener("change", e => updateRecord(e.target.closest("tr").dataset.id, { status: e.target.value })));
+      els.questionTracker.querySelectorAll("[data-action='star']").forEach(b => b.addEventListener("click", e => {
+        const id = e.target.closest("tr").dataset.id;
+        const rec = state.records.find(r => r.id === id);
+        updateRecord(id, { starred: !rec.starred });
+      }));
+      els.questionTracker.querySelectorAll("[data-action='note']").forEach(i => i.addEventListener("input", e => updateRecord(e.target.closest("tr").dataset.id, { note: e.target.value })));
+      els.questionTracker.querySelectorAll("[data-action='delete']").forEach(b => b.addEventListener("click", e => removeQuestion(e.target.closest("tr").dataset.id)));
+    }
+
+    function renderNextAction() {
+      if (!state.records.length) { els.nextAction.textContent = "Add questions to start."; return; }
+      const starred = state.records.filter(r => r.starred && r.status !== "ready").length;
+      if (starred > 0) { els.nextAction.textContent = `Review ${starred} starred risky questions.`; return; }
+      els.nextAction.textContent = "Focus on high-priority topics next.";
+    }
+
+    function renderStudyPlan() {
+      els.studyPlan.innerHTML = `<div class="empty">Study plan is based on your readiness. Start marking questions as 'Studying' to generate a plan.</div>`;
+    }
+
+    function renderActivity() {
+      els.activityFeed.innerHTML = state.activity.length ? state.activity.map(item => `<div class="feed-item"><strong>${escapeHtml(item.message)}</strong><span>${new Date(item.time).toLocaleString()}</span></div>`).join("") : `<div class="empty">No activity yet.</div>`;
+    }
+
+    function render() {
+      renderFilters();
+      renderMetrics();
+      renderWeeklyTrend();
+      renderTopics();
+      renderQuestionTable();
+      renderNextAction();
+      renderStudyPlan();
+      renderActivity();
     }
 
     function setImportStatus(message, isError = false) {
-      els.linkedinStatus.textContent = message;
-      els.linkedinStatus.style.color = isError ? "var(--brick)" : "var(--muted)";
-    }
-
-    function exportProgress() {
-      const data = {
-        exportedAt: new Date().toISOString(),
-        records: state.records,
-        summary: {
-          total: state.records.length,
-          ready: state.records.filter((record) => record.status === "ready").length,
-          starred: state.records.filter((record) => record.starred).length
-        }
-      };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "automation-qa-interview-progress.json";
-      link.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function exportCsv() {
-      const headers = [
-        "Question",
-        "Category",
-        "Trend Priority",
-        "Status",
-        "Starred",
-        "Note",
-        "Target Role",
-        "Target Company",
-        "Interview Date",
-        "Experience Level"
-      ];
-
-      const rows = state.records.map((record) => {
-        const category = categoryById(record.categoryId);
-        return [
-          record.question,
-          category.title,
-          category.priority,
-          statusLabel(record.status),
-          record.starred ? "Yes" : "No",
-          record.note,
-          state.target.role,
-          state.target.company,
-          state.target.interviewDate,
-          state.target.experienceLevel
-        ];
-      });
-
-      downloadFile("automation-qa-interview-progress.csv", toCsv([headers, ...rows]), "text/csv;charset=utf-8");
-    }
-
-    function toCsv(rows) {
-      return rows.map((row) => row.map((cell) => {
-        const value = String(cell ?? "");
-        return `"${value.replace(/"/g, '""')}"`;
-      }).join(",")).join("\n");
-    }
-
-    function downloadFile(filename, content, type) {
-      const blob = new Blob([content], { type });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = filename;
-      link.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function importFromLinkedinText() {
-      const questions = extractQuestions(els.linkedinText.value);
-      if (!questions.length) {
-        setImportStatus("No interview questions found. Paste the full post text, including bullets or question marks.", true);
-        return;
+      if (els.linkedinStatus) {
+        els.linkedinStatus.textContent = message;
+        els.linkedinStatus.style.color = isError ? "var(--red)" : "var(--muted)";
       }
-
-      const result = addQuestions(questions);
-      els.linkedinText.value = "";
-      setImportStatus(`Extracted ${questions.length} question(s). Added ${result.added}; ignored ${result.duplicates} duplicate(s).`);
     }
 
-    async function fetchLinkedinPost() {
-      const url = els.linkedinUrl.value.trim();
-      if (!url) {
-        setImportStatus("Paste a LinkedIn post URL first.", true);
-        return;
-      }
-
-      setImportStatus("Fetching public post text...");
-      try {
-        const response = await fetch(`/api/fetch-linkedin?url=${encodeURIComponent(url)}`);
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.error || "LinkedIn fetch failed.");
-        }
-
-        els.linkedinText.value = data.text;
-        const questions = extractQuestions(data.text);
-        if (!questions.length) {
-          setImportStatus("Fetched text, but no clear questions were detected. Review the text box or paste the post manually.", true);
-          return;
-        }
-
-        const result = addQuestions(questions);
-        setImportStatus(`Fetched and extracted ${questions.length} question(s). Added ${result.added}; ignored ${result.duplicates} duplicate(s).`);
-      } catch (error) {
-        setImportStatus(`${error.message} Paste the LinkedIn post text into the box and click Extract Text.`, true);
-      }
+    function purgeNoise() {
+      const before = state.records.length;
+      state.records = state.records.filter(r => looksLikeQuestionOrPrompt(r.question));
+      const deleted = before - state.records.length;
+      saveState();
+      render();
+      alert(`Cleanup complete! Removed ${deleted} lines of noise.`);
     }
 
     function resetDashboard() {
-      if (!confirm("Reset all questions, notes, stars, and status tracking?")) {
-        return;
-      }
-      state.records = [];
-      state.target = { role: "", company: "", interviewDate: "", experienceLevel: "fresher" };
+      if (!confirm("Clear all data?")) return;
+      try {
+        state.records = []; state.activity = [];
+        state.target = { role: "", company: "", interviewDate: "", experienceLevel: "fresher" };
+        localStorage.removeItem(STORAGE_KEY);
+        if(els.questionInput) els.questionInput.value = "";
+        if(els.linkedinText) els.linkedinText.value = "";
+        setImportStatus("Reset completed.");
+      } catch (e) { console.error(e); }
+      render();
+    }
+
+    function escapeHtml(v) { return String(v || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
+    function escapeAttr(v) { return escapeHtml(v || ""); }
+
+    els.segregateBtn.addEventListener("click", () => {
+      const q = parseQuestions(els.questionInput.value);
+      if (!q.length) return alert("No valid questions found.");
+      addQuestions(q, "manual");
       els.questionInput.value = "";
-      els.targetRole.value = "";
-      els.targetCompany.value = "";
-      els.interviewDate.value = "";
-      els.experienceLevel.value = "fresher";
-      localStorage.removeItem(STORAGE_KEY);
-      render();
-    }
-
-    function escapeHtml(value) {
-      return value
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
-    function escapeAttr(value) {
-      return escapeHtml(value || "");
-    }
-
-    document.getElementById("segregateBtn").addEventListener("click", segregateQuestions);
-    document.getElementById("sampleBtn").addEventListener("click", () => {
+    });
+    els.sampleBtn.addEventListener("click", () => {
       els.questionInput.value = sampleQuestions.join("\n");
-      segregateQuestions();
+      els.segregateBtn.click();
     });
-    document.getElementById("exportBtn").addEventListener("click", exportProgress);
-    document.getElementById("exportCsvBtn").addEventListener("click", exportCsv);
-    document.getElementById("fetchLinkedinBtn").addEventListener("click", fetchLinkedinPost);
-    document.getElementById("extractLinkedinBtn").addEventListener("click", importFromLinkedinText);
-    document.getElementById("resetBtn").addEventListener("click", resetDashboard);
-
-    els.searchInput.addEventListener("input", (event) => {
-      state.query = event.target.value.trim().toLowerCase();
-      render();
+    els.loginBtn.addEventListener("click", loginWithEmailPassword);
+    els.createAccountBtn.addEventListener("click", createLocalAccount);
+    els.logoutBtn.addEventListener("click", () => applyAuthSession(null));
+    els.useDemoCheck.addEventListener("change", e => {
+      if (e.target.checked) { els.authEmail.value = "qa.demo@tracker.com"; els.authPassword.value = "Qa@12345"; }
+      else { els.authEmail.value = ""; els.authPassword.value = ""; }
+    });
+    els.resetBtn.addEventListener("click", resetDashboard);
+    els.cleanNoiseBtn.addEventListener("click", purgeNoise);
+    els.themeToggleBtn.addEventListener("click", () => applyTheme(document.body.getAttribute("data-theme") === "dark" ? "light" : "dark"));
+    els.sidebarCollapseBtn.addEventListener("click", () => applySidebarCollapsed(!document.body.classList.contains("sidebar-collapsed")));
+    els.sidebarGroupToggles.forEach(t => t.addEventListener("click", () => {
+      const g = document.querySelector(`.sidebar-group[data-group="${t.getAttribute("data-group")}"]`);
+      if(g) {
+        g.classList.toggle("collapsed");
+        saveSidebarGroups();
+      }
+    }));
+    els.searchInput.addEventListener("input", e => { state.query = e.target.value.toLowerCase(); render(); });
+    els.statusFilter.addEventListener("change", e => { state.statusFilter = e.target.value; render(); });
+    
+    [ ["targetRole", "role"], ["targetCompany", "company"], ["interviewDate", "interviewDate"], ["experienceLevel", "experienceLevel"] ].forEach(([id, key]) => {
+      if(els[id]) els[id].addEventListener("input", e => { state.target[key] = e.target.value; saveState(); });
     });
 
-    els.statusFilter.addEventListener("change", (event) => {
-      state.statusFilter = event.target.value;
-      render();
-    });
-
-    document.querySelectorAll(".tab").forEach((tab) => {
-      tab.addEventListener("click", () => {
-        state.activeView = tab.dataset.view;
-        renderViews();
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const viewId = btn.getAttribute('data-view');
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.app-view').forEach(v => v.style.display = 'none');
+        const activeView = document.getElementById(`view-${viewId}`);
+        if (activeView) activeView.style.display = 'block';
       });
     });
-
-    [
-      ["targetRole", "role"],
-      ["targetCompany", "company"],
-      ["interviewDate", "interviewDate"],
-      ["experienceLevel", "experienceLevel"]
-    ].forEach(([elementKey, targetKey]) => {
-      els[elementKey].addEventListener("input", (event) => {
-        state.target[targetKey] = event.target.value;
-        saveState();
-        renderNextAction();
-      });
+    
+    els.viewQuestionsBtn.addEventListener('click', () => {
+        const trackerBtn = document.querySelector('[data-view="tracker"]');
+        if(trackerBtn) trackerBtn.click();
     });
 
+    loadTheme();
+    loadAuthSession();
+    loadSidebarCollapsed();
+    loadSidebarGroups();
     loadState();
     render();
   </script>
