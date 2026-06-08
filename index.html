@@ -991,6 +991,51 @@
         if(trackerBtn) trackerBtn.click();
     });
 
+    // --- LINKEDIN INTEGRATION LOGIC ---
+    els.extractLinkedinBtn.addEventListener("click", () => {
+      const text = els.linkedinText.value;
+      if (!text) {
+        setImportStatus("Please paste LinkedIn text first.", true);
+        return;
+      }
+      setImportStatus("Extracting questions...");
+      const questions = extractQuestions(text);
+      if (questions.length === 0) {
+        setImportStatus("No questions found in the text.", true);
+        return;
+      }
+      const result = addQuestions(questions, "LinkedIn Import");
+      setImportStatus(`Successfully added ${result.added} questions!`);
+    });
+
+    els.fetchLinkedinBtn.addEventListener("click", async () => {
+      const url = els.linkedinUrl.value;
+      if (!url) {
+        setImportStatus("Please enter a LinkedIn URL.", true);
+        return;
+      }
+      setImportStatus("Fetching content... (Using Proxy)");
+      try {
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error("Network response was not ok");
+        const data = await response.json();
+        const html = data.contents;
+        const postContentMatch = html.match(/<div class="[^>]*break-word[^>]*">([\s\S]*?)<\/div>/) 
+                              || html.match(/<span class="[^>]*break-word[^>]*">([\s\S]*?)<\/span>/);
+        if (postContentMatch && postContentMatch[1]) {
+          const cleanText = postContentMatch[1].replace(/<[^>]*>/g, ' ');
+          els.linkedinText.value = cleanText;
+          setImportStatus("Content fetched! Now click 'Extract Text'.");
+        } else {
+          throw new Error("Could not find post text in the page source.");
+        }
+      } catch (error) {
+        console.error(error);
+        setImportStatus("Fetch failed. LinkedIn is blocking the proxy. Please copy-paste the text manually.", true);
+      }
+    });
+
     loadTheme();
     loadAuthSession();
     loadSidebarCollapsed();
