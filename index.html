@@ -45,6 +45,7 @@
       transition: background 0.3s ease;
     }
 
+    /* Fixed Sidebar Layout */
     .sidebar {
       position: fixed; left: 0; top: 0; bottom: 0;
       width: var(--sidebar-width);
@@ -140,13 +141,6 @@
     }
     .star-active { color: var(--star-gold) !important; text-shadow: 0 0 10px rgba(251, 191, 36, 0.8); }
 
-    .mobile-menu-btn {
-      display: none; position: fixed; bottom: 25px; right: 25px; 
-      width: 60px; height: 60px; border-radius: 50%; 
-      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); 
-      color: white; border: none; font-size: 24px; z-index: 1000; cursor: pointer;
-    }
-
     .dist-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -167,6 +161,13 @@
       color: white; font-weight: 700; border-left: 5px solid var(--accent-purple);
     }
     body[data-theme="light"] .topic-group-header { background: linear-gradient(90deg, #dbeafe, transparent); color: var(--text-main); }
+
+    .mobile-menu-btn {
+      display: none; position: fixed; bottom: 25px; right: 25px; 
+      width: 60px; height: 60px; border-radius: 50%; 
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); 
+      color: white; border: none; font-size: 24px; z-index: 1000; cursor: pointer;
+    }
 
     @media (max-width: 768px) {
       .sidebar { transform: translateX(-100%); }
@@ -246,6 +247,8 @@
           <div style="display:flex; gap:10px;">
             <button id="exportCsvBtn" class="btn btn-muted">📄 CSV</button>
             <button id="exportPdfBtn" class="btn btn-muted">📕 PDF</button>
+            <button onclick="deleteSelected()" class="btn btn-danger" style="background: #dc2626;">🗑 Delete Selected</button>
+            <button onclick="deleteFiltered()" class="btn btn-danger" style="background: #991b1b;">🧹 Clear Search</button>
             <button id="clearFilterBtn" class="btn btn-muted">Clear Filter</button>
           </div>
         </div>
@@ -335,15 +338,18 @@
       exportPdfBtn: document.getElementById("exportPdfBtn")
     };
 
-    let state = { records: [], query: "", activeFilter: "all", target: {}, activity: [] };
+    let state = { records: [], query: "", activeFilter: "all", target: {}, activity: [], selectedIds: new Set() };
 
-    function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-
+    function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, selectedIds: Array.from(state.selectedIds) })); }
+    
     function load() { 
       const currentData = localStorage.getItem(STORAGE_KEY);
       const oldData = localStorage.getItem(OLD_STORAGE_KEY);
-      if (currentData) { state = JSON.parse(currentData); } 
-      else if (oldData) {
+      if (currentData) { 
+        const parsed = JSON.parse(currentData);
+        state = parsed;
+        state.selectedIds = new Set(parsed.selectedIds || []);
+      } else if (oldData) {
         const parsedOld = JSON.parse(oldData);
         state.records = parsedOld.records || [];
         state.target = parsedOld.target || {};
@@ -354,7 +360,7 @@
 
     function pushActivity(msg) {
       state.activity.unshift({ msg, time: new Date().toLocaleTimeString() });
-      state.activity = state.activity.slice(0, 5);
+      state.activity = state.slicing ? state.activity.slice(0, 5) : state.activity.slice(0, 5);
       render();
     }
 
@@ -372,34 +378,61 @@
       save(); pushActivity(`Added ${list.length} questions`);
     }
 
-    // CORE FIXES: Pass ID as string and use Array.map
-    function toggleStar(id) {
+    // CORE FUNCTIONS
+    window.toggleStar = function(id) {
       state.records = state.records.map(r => r.id == id ? {...r, starred: !r.starred} : r);
       save(); render();
-    }
+    };
 
-    function updateStatus(id, val) {
+    window.updateStatus = function(id, val) {
       state.records = state.records.map(r => r.id == id ? {...r, status: val} : r);
       save(); render();
-    }
+    };
 
-window.removeQ = function(id) {
-    console.log("Delete button clicked for ID:", id); // This lets you check the console
-    
-    // Force both to strings to avoid ANY type mismatch
-    const targetId = String(id);
-    
-    const initialCount = state.records.length;
-    state.records = state.records.filter(r => String(r.id) !== targetId);
-    
-    if (state.records.length < initialCount) {
-        console.log("Item successfully removed from state.");
-        save();   // Save to local storage
-        render(); // Update the screen
-    } else {
-        console.error("Item not found. Check if ID exists in state.");
-    }
-};
+    window.removeQ = function(id) {
+      state.records = state.records.filter(r => r.id != id);
+      save(); render();
+    };
+
+    // MULTI-SELECT LOGIC
+    window.toggleSelect = function(id) {
+      const sId = String(id);
+      state.selectedIds.has(sId) ? state.selectedIds.delete(sId) : state.selectedIds.add(sId);
+      render();
+    };
+
+    window.selectAllFiltered = function() {
+      const filtered = state.records.filter(r => {
+        const matchesQuery = r.question.toLowerCase().includes(state.query);
+        const matchesTopic = state.activeFilter === "all" || r.categoryId === state.activeFilter;
+        return matchesQuery && matchesTopic;
+      });
+      filtered.forEach(r => state.selectedIds.add(String(r.id)));
+      render();
+    };
+
+    window.deleteSelected = function() {
+      if (state.selectedIds.size === 0) return alert("Please select items to delete.");
+      if (!confirm(`Delete ${state.selectedIds.size} selected questions?`)) return;
+      
+      state.records = state.records.filter(r => !state.selectedIds.has(String(r.id)));
+      state.selectedIds.clear();
+      save();
+      pushActivity(`Bulk Deleted ${state.selectedIds.size} entries`);
+      render();
+    };
+
+    window.deleteFiltered = function() {
+      if (!state.query) return alert("Please search for a keyword first to use this feature.");
+      if (!confirm(`Delete ALL questions matching "${state.query}"?`)) return;
+
+      const initialCount = state.records.length;
+      state.records = state.records.filter(r => !r.question.toLowerCase().includes(state.query));
+      state.selectedIds.clear();
+      save();
+      pushActivity(`Vault Clean: Deleted ${initialCount - state.records.length} entries`);
+      render();
+    };
 
     function exportCSV() {
       if(!state.records.length) return alert("No data");
@@ -411,8 +444,7 @@ window.removeQ = function(id) {
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = 'QA_Vault_Intelligence.csv'; a.click();
-      pushActivity("Exported CSV Report");
+      a.href = url; a.download = 'QA_Vault_Report.csv'; a.click();
     }
 
     async function exportPDF() {
@@ -425,8 +457,7 @@ window.removeQ = function(id) {
         return [r.question, cat.title, cat.difficulty, r.status];
       });
       doc.autoTable({ head: [['Question', 'Topic', 'Difficulty', 'Status']], body: rows, startY: 20, theme: 'grid' });
-      doc.save('QA_Vault_Intelligence.pdf');
-      pushActivity("Exported PDF Report");
+      doc.save('QA_Vault_Report.pdf');
     }
 
     function renderDistribution() {
@@ -436,7 +467,7 @@ window.removeQ = function(id) {
         const percent = qns.length ? Math.round((ready / qns.length) * 100) : 0;
         let color = percent < 30 ? '#ef4444' : (percent < 70 ? '#fbbf24' : 'var(--accent-blue)');
         return `<div class="dist-card glass-panel" onclick="filterByTopic('${cat.id}')">
-          <div class="dist-header" style="display:flex; justify-content:space-between; margin-bottom:10px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
             <strong>${cat.title}</strong><span style="opacity:0.6; font-size:12px;">${qns.length} Qns</span>
           </div>
           <div style="font-size:24px; font-weight:800;">${percent}% <span style="font-size:14px; font-weight:400; color:var(--text-muted);">Mastery</span></div>
@@ -466,7 +497,7 @@ window.removeQ = function(id) {
       const rp = state.records.length ? Math.round((state.records.filter(r => r.status === 'ready').length / state.records.length) * 100) : 0;
       els.readinessScore.textContent = rp + "%";
       els.readinessPercent.textContent = rp + "%";
-      els.readinessRing.style.background = `conic-gradient(var(--accent-blue) 0deg, #1e293 la-background ${rp * 3.6}deg)`;
+      els.readinessRing.style.background = `conic-gradient(var(--accent-blue) 0deg, #1e293b ${rp * 3.6}deg)`;
 
       let registryHtml = "";
       const groups = categories.filter(cat => filtered.some(r => r.categoryId === cat.id));
@@ -477,10 +508,11 @@ window.removeQ = function(id) {
           <div class="topic-group-header"><span>${cat.title}</span><span style="font-size:12px; opacity:0.8;">${catQns.length} Questions</span></div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Question</th><th>Status</th><th>Actions</th></tr></thead>
+              <thead><tr><th><input type="checkbox" onclick="selectAllFiltered()"></th><th>Question</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody>
                 ${catQns.map(r => `
                   <tr>
+                    <td style="text-align:center;"><input type="checkbox" class="custom-checkbox" ${state.selectedIds.has(String(r.id)) ? 'checked' : ''} onclick="toggleSelect(${r.id})"></td>
                     <td>${r.question}</td>
                     <td>
                       <select onchange="updateStatus(${r.id}, this.value)" style="background:transparent; color:var(--text-main); font-size:12px; border:1px solid var(--glass-border);">
@@ -491,8 +523,7 @@ window.removeQ = function(id) {
                     </td>
                     <td>
                       <button class="star-btn ${r.starred?'star-active':''}" onclick="toggleStar(${r.id})">${r.starred?'★':'☆'}</button>
-                      <button class="btn btn-danger" style="padding:2px 5px;" onclick="removeQ('${r.id}')">🗑</button>
-
+                      <button class="btn btn-danger" style="padding:2px 5px;" onclick="removeQ(${r.id})">🗑</button>
                     </td>
                   </tr>`).join("")}
               </tbody>
