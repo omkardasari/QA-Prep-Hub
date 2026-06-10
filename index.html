@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>QA Vault | Interview Intelligence</title>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+  
   <style>
     :root {
       --bg-color: #05070a;
@@ -14,21 +18,22 @@
       --text-muted: #94a3b8;
       --accent-blue: #3b82f6;
       --accent-purple: #8b5cf6;
+      --star-gold: #fbbf24;
       --neon-glow: 0 0 20px rgba(59, 130, 246, 0.4);
       --radius-xl: 24px;
       --radius-m: 12px;
-      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition: all 0.2s ease;
+      --sidebar-width: 280px;
     }
 
     body[data-theme="light"] {
       --bg-color: #f0f4f8;
-      --glass-bg: rgba(255, 255, 255, 0.7);
-      --glass-border: rgba(0, 0, 0, 0.05);
+      --glass-bg: rgba(255, 255, 255, 0.8);
+      --glass-border: rgba(0, 0, 0, 0.1);
       --text-main: #0f172a;
       --text-muted: #64748b;
       --accent-blue: #2563eb;
       --accent-purple: #7c3aed;
-      --neon-glow: 0 0 15px rgba(37, 99, 235, 0.2);
     }
 
     * { box-sizing: border-box; outline: none; }
@@ -37,8 +42,22 @@
       font-family: 'Inter', system-ui, -apple-system, sans-serif; 
       color: var(--text-main);
       background-color: var(--bg-color);
-      overflow-x: hidden;
-      transition: background 0.5s ease;
+      transition: background 0.3s ease;
+    }
+
+    .sidebar {
+      position: fixed; left: 0; top: 0; bottom: 0;
+      width: var(--sidebar-width);
+      background: var(--bg-color);
+      border-right: 1px solid var(--glass-border);
+      padding: 30px 20px;
+      z-index: 100;
+      overflow-y: auto;
+    }
+    .main-content {
+      margin-left: var(--sidebar-width);
+      min-height: 100vh;
+      padding: 30px;
     }
 
     .bg-glow {
@@ -51,30 +70,17 @@
       border-radius: 50%; filter: blur(80px);
       animation: move 25s infinite alternate;
     }
-    .blob-2 { 
-      background: radial-gradient(circle, rgba(139,92,246,0.12) 0%, rgba(0,0,0,0) 70%);
-      animation-delay: -12s; right: -10%; top: -10%;
-    }
-    @keyframes move {
-      from { transform: translate(-10%, -10%) scale(1); }
-      to { transform: translate(20%, 20%) scale(1.3); }
-    }
+    .blob-2 { background: radial-gradient(circle, rgba(139,92,246,0.12) 0%, rgba(0,0,0,0) 70%); animation-delay: -12s; right: -10%; top: -10%; }
+    @keyframes move { from { transform: translate(-10%, -10%) scale(1); } to { transform: translate(20%, 20%) scale(1.3); } }
 
     .glass-panel {
       background: var(--glass-bg);
       backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid var(--glass-border);
       border-radius: var(--radius-xl);
     }
 
-    .app { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
-    .sidebar {
-      padding: 30px 20px; height: 100vh; position: sticky; top: 0;
-      border-right: 1px solid var(--glass-border);
-      transition: var(--transition); z-index: 90;
-    }
-    .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+    .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; font-size: 22px; font-weight: 800; }
     .logo-mark { width: 32px; height: 32px; border-radius: 10px; background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); box-shadow: var(--neon-glow); }
 
     .nav-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
@@ -83,11 +89,8 @@
       padding: 12px 16px; border-radius: var(--radius-m); color: var(--text-muted); 
       font-weight: 500; cursor: pointer; transition: var(--transition);
     }
-    .nav-btn:hover, .nav-btn.active { 
-      background: rgba(255,255,255,0.05); color: var(--text-main); 
-      transform: translateX(5px);
-    }
-    .nav-btn.active { background: linear-gradient(90deg, rgba(59,130,246,0.1), transparent); border-left: 4px solid var(--accent-blue); }
+    .nav-btn:hover, .nav-btn.active { background: rgba(255,255,255,0.05); color: var(--text-main); transform: translateX(5px); }
+    .nav-btn.active { border-left: 4px solid var(--accent-blue); background: linear-gradient(90deg, rgba(59,130,246,0.1), transparent); }
 
     .sidebar-group { border: 1px solid var(--glass-border); border-radius: var(--radius-m); background: rgba(0,0,0,0.2); overflow: hidden; margin-bottom: 12px; }
     .sidebar-group-toggle {
@@ -102,262 +105,206 @@
       width: 100%; border: 1px solid var(--glass-border); border-radius: 8px; background: rgba(0,0,0,0.3);
       padding: 10px 12px; color: var(--text-main); transition: var(--transition);
     }
-    input:focus, textarea:focus { border-color: var(--accent-blue); box-shadow: var(--neon-glow); }
+    body[data-theme="light"] select, body[data-theme="light"] input { background: #fff; color: #000; border: 1px solid #ccc; }
 
     .btn { 
-      border-radius: 8px; padding: 12px 20px; font-weight: 600; cursor: pointer; 
+      border-radius: 8px; padding: 10px 16px; font-weight: 600; cursor: pointer; 
       transition: var(--transition); border: 1px solid transparent;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     }
     .btn-primary { background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); color: white; box-shadow: var(--neon-glow); }
-    .btn-primary:hover { transform: translateY(-2px); filter: brightness(1.2); }
     .btn-muted { background: rgba(255,255,255,0.05); color: var(--text-main); border: 1px solid var(--glass-border); }
-    .btn-muted:hover { background: rgba(255,255,255,0.1); }
     .btn-danger { background: #ef4444; color: white; }
 
-    .content { padding: 30px; display: grid; gap: 24px; }
     .header {
       display: grid; grid-template-columns: 1fr auto auto; gap: 20px; align-items: center;
-      padding: 15px 25px;
+      padding: 15px 25px; margin-bottom: 24px;
     }
 
     .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-    .kpi-card {
-      padding: 24px; transition: var(--transition); cursor: pointer;
-      position: relative; overflow: hidden;
-    }
-    .kpi-card:hover { transform: translateY(-5px); background: rgba(255,255,255,0.06); border-color: var(--accent-blue); }
+    .kpi-card { padding: 24px; transition: var(--transition); cursor: pointer; }
+    .kpi-card:hover { transform: translateY(-5px); border-color: var(--accent-blue); }
     .kpi-head { color: var(--text-muted); font-size: 13px; font-weight: 500; margin-bottom: 10px; }
-    .kpi-value { font-size: 36px; font-weight: 800; letter-spacing: -1px; }
-    .kpi-growth { font-size: 12px; color: #10b981; font-weight: 600; margin-top: 5px; }
+    .kpi-value { font-size: 36px; font-weight: 800; }
 
-    .table-wrap { overflow-x: auto; border-radius: var(--radius-xl); border: 1px solid var(--glass-border); }
+    .table-wrap { overflow-x: auto; border-radius: var(--radius-xl); border: 1px solid var(--glass-border); margin-bottom: 20px; }
     table { width: 100%; border-collapse: collapse; min-width: 800px; }
     th { padding: 15px; text-align: left; color: var(--text-muted); font-size: 11px; text-transform: uppercase; background: rgba(0,0,0,0.2); }
     td { padding: 15px; border-bottom: 1px solid var(--glass-border); font-size: 14px; }
-    tr:hover { background: rgba(255,255,255,0.02); }
 
     .badge { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: var(--accent-blue); color: white; }
-    .note-input { background: transparent; border: 1px solid transparent; border-bottom: 1px solid var(--glass-border); width: 150px; }
-    .note-input:focus { border: 1px solid var(--accent-blue); background: rgba(0,0,0,0.2); }
+    
+    .star-btn { 
+      background: none !important; border: none !important; cursor: pointer; 
+      font-size: 20px; transition: var(--transition); color: var(--text-muted); padding: 0 10px;
+    }
+    .star-active { color: var(--star-gold) !important; text-shadow: 0 0 10px rgba(251, 191, 36, 0.8); }
 
     .mobile-menu-btn {
       display: none; position: fixed; bottom: 25px; right: 25px; 
       width: 60px; height: 60px; border-radius: 50%; 
       background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); 
-      color: white; border: none; font-size: 24px; 
-      box-shadow: 0 10px 20px rgba(0,0,0,0.4); z-index: 1000; cursor: pointer;
+      color: white; border: none; font-size: 24px; z-index: 1000; cursor: pointer;
     }
 
+    .dist-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .dist-card {
+      padding: 20px; transition: var(--transition); cursor: pointer;
+      border: 1px solid var(--glass-border); position: relative; overflow: hidden;
+    }
+    .dist-card:hover { transform: scale(1.02); border-color: var(--accent-blue); background: rgba(255,255,255,0.05); }
+    .progress-container { height: 8px; background: rgba(0,0,0,0.3); border-radius: 4px; overflow: hidden; margin-top: 10px; }
+    .progress-bar { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+
+    .topic-group-header {
+      background: linear-gradient(90deg, var(--accent-blue), transparent);
+      padding: 12px 20px; border-radius: var(--radius-m); margin: 30px 0 10px 0;
+      display: flex; justify-content: space-between; align-items: center;
+      color: white; font-weight: 700; border-left: 5px solid var(--accent-purple);
+    }
+    body[data-theme="light"] .topic-group-header { background: linear-gradient(90deg, #dbeafe, transparent); color: var(--text-main); }
+
     @media (max-width: 768px) {
-      .app { grid-template-columns: 1fr; }
-      .sidebar { position: fixed; left: 0; transform: translateX(-100%); width: 280px; }
+      .sidebar { transform: translateX(-100%); }
       .sidebar.open { transform: translateX(0); }
+      .main-content { margin-left: 0; }
       .mobile-menu-btn { display: flex; align-items: center; justify-content: center; }
       .grid-4 { grid-template-columns: repeat(2, 1fr); }
-      .header { grid-template-columns: 1fr auto; }
-      .header .profile { display: none; }
     }
-    @media (max-width: 480px) { .grid-4 { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body data-theme="dark">
-  <div class="bg-glow">
-    <div class="blob"></div>
-    <div class="blob blob-2"></div>
-  </div>
-  
+  <div class="bg-glow"><div class="blob"></div><div class="blob blob-2"></div></div>
   <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
 
-  <main class="app">
-    <aside class="sidebar" id="mainSidebar">
-      <div class="logo">
-        <div class="logo-mark"></div>
-        <span>QA Vault</span>
-      </div>
-
-      <ul class="nav-list">
-        <li><button class="nav-btn active" data-view="dashboard"><span>📊</span> Dashboard</button></li>
-        <li><button class="nav-btn" data-view="tracker"><span>📝</span> Registry</button></li>
-        <li><button class="nav-btn" data-view="trends"><span>🔥</span> Analysis</button></li>
-        <li><button class="nav-btn" data-view="readiness"><span>🎯</span> Readiness</button></li>
-        <li><button class="nav-btn" data-view="settings"><span>⚙️</span> Config</button></li>
-      </ul>
-
-      <div class="sidebar-tools">
-        <div class="sidebar-group" data-group="intake">
-          <button class="sidebar-group-toggle" data-group-toggle="intake">Ingestion <span>▾</span></button>
-          <div class="sidebar-group-body">
-            <textarea id="questionInput" placeholder="Paste raw text..."></textarea>
-            <div class="btn-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-              <button id="segregateBtn" class="btn btn-primary">Segregate</button>
-              <button id="sampleBtn" class="btn btn-muted">Sample</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="sidebar-group" data-group="imports">
-          <button class="sidebar-group-toggle" data-group-toggle="imports">LinkedIn Sync <span>▾</span></button>
-          <div class="sidebar-group-body">
-            <input id="linkedinUrl" type="url" placeholder="LinkedIn URL...">
-            <div class="btn-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-              <button id="fetchLinkedinBtn" class="btn btn-muted">Fetch</button>
-              <button id="extractLinkedinBtn" class="btn btn-primary">Extract</button>
-            </div>
-            <textarea id="linkedinText" placeholder="Manual post paste..."></textarea>
-            <div id="linkedinStatus" style="font-size:11px; color:var(--text-muted); margin-top:5px;"></div>
-          </div>
-        </div>
-
-        <div class="sidebar-group collapsed" data-group="manage">
-          <button class="sidebar-group-toggle" data-group-toggle="manage">Control <span>▾</span></button>
-          <div class="sidebar-group-body">
-            <div class="btn-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-              <button id="cleanNoiseBtn" class="btn btn-muted">🧹 Clean</button>
-              <button id="resetBtn" class="btn btn-danger">Purge</button>
-            </div>
-            <select id="statusFilter" style="margin-top:10px;">
-              <option value="all">All Status</option>
-              <option value="new">New</option>
-              <option value="studying">Studying</option>
-              <option value="revise">Revise</option>
-              <option value="ready">Ready</option>
-            </select>
-            <div id="filterList"></div>
+  <aside class="sidebar" id="mainSidebar">
+    <div class="logo"><div class="logo-mark"></div><span>QA Vault</span></div>
+    <ul class="nav-list">
+      <li><button class="nav-btn active" data-view="dashboard">📊 Dashboard</button></li>
+      <li><button class="nav-btn" data-view="tracker">📝 Registry</button></li>
+      <li><button class="nav-btn" data-view="trends">🔥 Analysis</button></li>
+      <li><button class="nav-btn" data-view="readiness">🎯 Readiness</button></li>
+      <li><button class="nav-btn" data-view="settings">⚙️ Config</button></li>
+    </ul>
+    <div class="sidebar-tools">
+      <div class="sidebar-group" data-group="intake">
+        <button class="sidebar-group-toggle" data-group-toggle="intake">Ingestion <span>▾</span></button>
+        <div class="sidebar-group-body">
+          <textarea id="questionInput" placeholder="Paste raw text..."></textarea>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;">
+            <button id="segregateBtn" class="btn btn-primary">Segregate</button>
+            <button id="sampleBtn" class="btn btn-muted">Sample</button>
           </div>
         </div>
       </div>
-    </aside>
-
-    <section class="content">
-      <header class="header glass-panel">
-        <input id="searchInput" type="search" placeholder="Query the vault...">
-        <button class="btn btn-muted" id="themeToggleBtn">🌓</button>
-        <div class="profile glass-panel" style="padding: 5px 15px; display:flex; align-items:center; gap:10px;">
-          <div class="logo-mark" style="width:20px; height:20px;"></div>
-          <strong id="profileEmail" style="font-size:12px;">QA Vault User</strong>
+      <div class="sidebar-group" data-group="imports">
+        <button class="sidebar-group-toggle" data-group-toggle="imports">LinkedIn Sync <span>▾</span></button>
+        <div class="sidebar-group-body">
+          <input id="linkedinUrl" type="url" placeholder="LinkedIn URL...">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;">
+            <button id="fetchLinkedinBtn" class="btn btn-muted">Fetch</button>
+            <button id="extractLinkedinBtn" class="btn btn-primary">Extract</button>
+          </div>
+          <textarea id="linkedinText" style="margin-top:10px;" placeholder="Paste post text..."></textarea>
         </div>
-      </header>
+      </div>
+    </div>
+  </aside>
 
-      <div id="view-dashboard" class="app-view">
-        <div class="grid-4">
-          <div class="kpi-card glass-panel">
-            <div class="kpi-head">Total Intelligence</div>
-            <div class="kpi-value" id="totalQuestions">0</div>
-            <div class="kpi-growth">↑ Analysis Active</div>
-          </div>
-          <div class="kpi-card glass-panel">
-            <div class="kpi-head">Mastered</div>
-            <div class="kpi-value" id="readyQuestions">0</div>
-            <div class="kpi-growth">↑ Velocity Peak</div>
-          </div>
-          <div class="kpi-card glass-panel">
-            <div class="kpi-head">High Priority</div>
-            <div class="kpi-value" id="highPriority">0</div>
-            <div class="kpi-growth">Focus Zone</div>
-          </div>
-          <div class="kpi-card glass-panel">
-            <div class="kpi-head">Readiness Score</div>
-            <div class="kpi-value" id="readinessScore">0%</div>
-            <div class="kpi-growth">Target: 90%</div>
+  <main class="main-content">
+    <header class="header glass-panel">
+      <input id="searchInput" type="search" placeholder="Query the vault...">
+      <button class="btn btn-muted" id="themeToggleBtn">🌓</button>
+      <div class="profile glass-panel" style="padding: 5px 15px; display:flex; align-items:center; gap:10px;">
+        <div class="logo-mark" style="width:20px; height:20px;"></div>
+        <strong style="font-size:12px;">QA Vault User</strong>
+      </div>
+    </header>
+
+    <div id="view-dashboard" class="app-view">
+      <div class="grid-4">
+        <div class="kpi-card glass-panel"><div class="kpi-head">Total Questions</div><div class="kpi-value" id="totalQuestions">0</div></div>
+        <div class="kpi-card glass-panel"><div class="kpi-head">Mastered</div><div class="kpi-value" id="readyQuestions">0</div></div>
+        <div class="kpi-card glass-panel"><div class="kpi-head">High Priority</div><div class="kpi-value" id="highPriority">0</div></div>
+        <div class="kpi-card glass-panel"><div class="kpi-head">Readiness Score</div><div class="kpi-value" id="readinessScore">0%</div></div>
+      </div>
+      <div class="glass-panel" style="margin-top:24px; padding:30px; background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.1)); border: 1px solid var(--accent-blue);">
+        <h2 style="margin-top:0;">Strategic Recommendation</h2>
+        <p id="nextAction">Analyzing vault data for optimal study path...</p>
+        <button id="viewQuestionsBtn" class="btn btn-primary" style="margin-top:10px;">Open Registry</button>
+      </div>
+    </div>
+
+    <div id="view-tracker" class="app-view" style="display:none;">
+      <div class="section glass-panel" style="padding:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+          <h2 style="margin:0;">Intelligence Registry</h2>
+          <div style="display:flex; gap:10px;">
+            <button id="exportCsvBtn" class="btn btn-muted">📄 CSV</button>
+            <button id="exportPdfBtn" class="btn btn-muted">📕 PDF</button>
+            <button id="clearFilterBtn" class="btn btn-muted">Clear Filter</button>
           </div>
         </div>
+        <div id="registryContent"></div>
+        <div id="trackerEmpty" style="text-align:center; padding:40px; color:var(--text-muted);">Vault is empty.</div>
+      </div>
+    </div>
 
-        <div class="section glass-panel" style="margin-top:24px; background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.1)); border: 1px solid var(--accent-blue);">
-          <h2 style="margin-bottom:15px;">Strategic Recommendation</h2>
-          <div class="hero-card" style="background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); padding: 30px; border-radius: var(--radius-xl); color: white; box-shadow: var(--neon-glow);">
-            <h3 style="margin:0; font-size:22px;">Next Action Point</h3>
-            <p id="nextAction" style="opacity:0.9; font-size:16px;">Analyzing vault data for optimal study path...</p>
-            <button id="viewQuestionsBtn" class="btn btn-muted" style="width:fit-content; background: white; color: black; margin-top:10px;">Open Registry</button>
+    <div id="view-trends" class="app-view" style="display:none;">
+      <div class="section glass-panel" style="padding:20px;">
+        <h2 style="margin-bottom:20px;">Knowledge Distribution Map</h2>
+        <div id="distGrid" class="dist-grid"></div>
+      </div>
+    </div>
+
+    <div id="view-readiness" class="app-view" style="display:none;">
+      <div class="section glass-panel" style="padding:20px; text-align:center;">
+        <h2 style="margin-bottom:20px;">Performance Metrics</h2>
+        <div id="readinessRing" style="width:200px; height:200px; border-radius:50%; margin: 0 auto; display:grid; place-items:center; background: conic-gradient(var(--accent-blue) 0deg, #1e293b 0deg);">
+          <div style="width:160px; height:160px; background: var(--bg-color); border-radius:50%; display:grid; place-items:center; border: 1px solid var(--glass-border);">
+            <strong id="readinessPercent" style="font-size:32px;">0%</strong>
           </div>
         </div>
       </div>
+    </div>
 
-      <div id="view-tracker" class="app-view" style="display:none;">
-        <div class="section glass-panel">
-          <div class="section-head" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2 style="margin:0;">Intelligence Registry</h2>
-            <button id="clearFilterBtn" class="btn btn-muted" style="padding:5px 10px; font-size:11px;">Clear Topic Filter</button>
-          </div>
-          <div class="table-wrap">
-            <table id="mainTable">
-              <thead>
-                <tr style="color:var(--text-muted); font-size:11px; text-transform:uppercase;">
-                  <th style="padding:15px; text-align:left;">Question</th><th style="padding:15px; text-align:left;">Topic</th><th style="padding:15px; text-align:left;">Difficulty</th><th style="padding:15px; text-align:left;">Status</th><th style="padding:15px; text-align:left;">Reviewed</th><th style="padding:15px; text-align:left;">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="questionTracker"></tbody>
-            </table>
-          </div>
-          <div id="trackerEmpty" class="empty" style="text-align:center; padding:40px; color:var(--text-muted);">Vault is currently empty.</div>
+    <div id="view-settings" class="app-view" style="display:none;">
+      <div class="section glass-panel" style="padding:20px;">
+        <h2 style="margin-bottom:20px;">Vault Configuration</h2>
+        <div class="grid-4" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px;">
+          <div style="display:flex; flex-direction:column; gap:5px;"><label>Target Role</label><input id="targetRole"></div>
+          <div style="display:flex; flex-direction:column; gap:5px;"><label>Target Company</label><input id="targetCompany"></div>
+          <div style="display:flex; flex-direction:column; gap:5px;"><label>Date</label><input id="interviewDate" type="date"></div>
+          <div style="display:flex; flex-direction:column; gap:5px;"><label>Level</label><select id="experienceLevel">
+            <option value="fresher">Fresher</option><option value="mid">Mid</option><option value="senior">Senior</option>
+          </select></div>
         </div>
       </div>
+    </div>
 
-      <div id="view-trends" class="app-view" style="display:none;">
-        <div class="section glass-panel">
-          <h2 style="margin-bottom:20px;">Knowledge Distribution</h2>
-          <div id="topicCards" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:15px;"></div>
-        </div>
-      </div>
-
-      <div id="view-readiness" class="app-view" style="display:none;">
-        <div class="section glass-panel">
-          <h2 style="margin-bottom:20px;">Performance Metrics</h2>
-          <div class="analytics" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:30px;">
-            <div style="display:flex; flex-direction:column; align-items:center;">
-                <div class="ring" id="readinessRing" style="width:200px; height:200px; border-radius:50%; display:grid; place-items:center; background: conic-gradient(var(--accent-blue) 0deg, var(--accent-purple) 0deg, #1e293b 0deg);">
-                    <div style="width:160px; height:160px; background: var(--bg-color); border-radius:50%; display:grid; place-items:center; border: 1px solid var(--glass-border);">
-                        <strong id="readinessPercent" style="font-size:32px;">0%</strong>
-                    </div>
-                </div>
-            </div>
-            <div class="trend-bars" id="weeklyTrend" style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; align-items:end; height:200px; padding:20px; background:rgba(0,0,0,0.2); border-radius:var(--radius-m);"></div>
-          </div>
-        </div>
-      </div>
-
-      <div id="view-settings" class="app-view" style="display:none;">
-        <div class="section glass-panel">
-          <h2 style="margin-bottom:20px;">Vault Configuration</h2>
-          <div class="grid-4" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px;">
-            <div style="display:flex; flex-direction:column; gap:8px;"><label class="label">Role</label><input id="targetRole"></div>
-            <div style="display:flex; flex-direction:column; gap:8px;"><label class="label">Company</label><input id="targetCompany"></div>
-            <div style="display:flex; flex-direction:column; gap:8px;"><label class="label">Date</label><input id="interviewDate" type="date"></div>
-            <div style="display:flex; flex-direction:column; gap:8px;"><label class="label">Level</label><select id="experienceLevel">
-              <option value="fresher">Fresher</option><option value="mid">Mid</option><option value="senior">Senior</option>
-            </select></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="section glass-panel" style="margin-top:20px;">
-        <h2 style="margin-bottom:15px;">Activity Stream</h2>
-        <div id="activityFeed" class="feed" style="display:grid; gap:10px;"></div>
-      </div>
-    </section>
+    <div class="glass-panel" style="margin-top:20px; padding:20px;">
+      <h3 style="margin-top:0;">Activity Stream</h3>
+      <div id="activityFeed" style="display:grid; gap:10px;"></div>
+    </div>
   </main>
 
   <script>
-    const STORAGE_KEY = "qaInterviewIntelligenceStateV2";
-    const THEME_KEY = "qavault_theme_v1";
+    const STORAGE_KEY = "qaVault_State_v3"; 
+    const OLD_STORAGE_KEY = "qaInterviewIntelligenceStateV2"; 
+    const THEME_KEY = "qaVault_Theme_v3";
 
     const categories = [
-      { id: "selenium", title: "Selenium", priority: "high", difficulty: "Medium", keywords: ["selenium", "webdriver", "xpath", "css selector", "stale element", "grid"] },
-      { id: "playwright", title: "Playwright", priority: "high", difficulty: "Medium", keywords: ["playwright", "trace", "locator", "page fixture", "browser context"] },
-      { id: "testng", title: "TestNG / JUnit", priority: "core", difficulty: "Medium", keywords: ["testng", "junit", "@test", "@before", "@after", "dataprovider", "parameterized"] },
-      { id: "manual", title: "Manual Testing", priority: "core", difficulty: "Low", keywords: ["manual testing", "test case", "test scenario", "smoke test", "sanity", "regression cycle"] },
-      { id: "scenario", title: "Scenario-Based", priority: "core", difficulty: "High", keywords: ["real-time scenario", "production issue", "root cause", "defect leakage", "incident", "war room"] },
-      { id: "api", title: "API Testing", priority: "high", difficulty: "High", keywords: ["api", "rest", "postman", "schema", "auth", "status code", "contract testing", "soap"] },
-      { id: "framework", title: "Framework Design", priority: "high", difficulty: "High", keywords: ["framework", "pom", "architecture", "design pattern", "hybrid framework", "reusable utility"] },
-      { id: "cicd", title: "CI/CD", priority: "core", difficulty: "Medium", keywords: ["pipeline", "cicd", "ci/cd", "jenkins", "github actions", "gitlab ci", "quality gate"] },
-      { id: "sql", title: "SQL / DB Validation", priority: "core", difficulty: "Medium", keywords: ["sql", "database", "join", "query", "data validation", "backend validation"] },
-      { id: "performance", title: "Performance Testing", priority: "medium", difficulty: "Medium", keywords: ["performance", "load test", "jmeter", "throughput", "latency", "stress test"] },
-      { id: "mobile", title: "Mobile Testing", priority: "medium", difficulty: "Medium", keywords: ["appium", "mobile testing", "android", "ios", "device farm"] },
-      { id: "ai", title: "AI in Testing", priority: "medium", difficulty: "Medium", keywords: ["ai", "llm", "genai", "prompt", "copilot"] },
-      { id: "risk", title: "Risk-Based Testing", priority: "core", difficulty: "High", keywords: ["risk", "priority", "coverage", "impact analysis"] },
-      { id: "other", title: "General QA", priority: "medium", difficulty: "Low", keywords: [] }
+      { id: "selenium", title: "Selenium", difficulty: "Medium", keywords: ["selenium", "webdriver", "xpath", "stale", "wait"] },
+      { id: "playwright", title: "Playwright", difficulty: "Medium", keywords: ["playwright", "trace", "locator", "fixture"] },
+      { id: "api", title: "API Testing", difficulty: "High", keywords: ["api", "rest", "postman", "json", "status code", "schema"] },
+      { id: "framework", title: "Framework", difficulty: "High", keywords: ["pom", "framework", "design pattern", "hybrid"] },
+      { id: "manual", title: "Manual", difficulty: "Low", keywords: ["manual", "test case", "smoke", "sanity", "regression"] },
+      { id: "other", title: "General", difficulty: "Low", keywords: [] }
     ];
-
-    const statusWeight = { new: 0.15, studying: 0.45, revise: 0.7, ready: 1 };
 
     const els = {
       questionInput: document.getElementById("questionInput"),
@@ -367,149 +314,139 @@
       fetchLinkedinBtn: document.getElementById("fetchLinkedinBtn"),
       extractLinkedinBtn: document.getElementById("extractLinkedinBtn"),
       linkedinText: document.getElementById("linkedinText"),
-      linkedinStatus: document.getElementById("linkedinStatus"),
-      resetBtn: document.getElementById("resetBtn"),
-      cleanNoiseBtn: document.getElementById("cleanNoiseBtn"),
       searchInput: document.getElementById("searchInput"),
-      statusFilter: document.getElementById("statusFilter"),
-      filterList: document.getElementById("filterList"),
       totalQuestions: document.getElementById("totalQuestions"),
       readyQuestions: document.getElementById("readyQuestions"),
       highPriority: document.getElementById("highPriority"),
       readinessScore: document.getElementById("readinessScore"),
       readinessPercent: document.getElementById("readinessPercent"),
       readinessRing: document.getElementById("readinessRing"),
-      weeklyTrend: document.getElementById("weeklyTrend"),
       nextAction: document.getElementById("nextAction"),
       viewQuestionsBtn: document.getElementById("viewQuestionsBtn"),
-      topicCards: document.getElementById("topicCards"),
-      questionTracker: document.getElementById("questionTracker"),
+      distGrid: document.getElementById("distGrid"),
+      registryContent: document.getElementById("registryContent"),
       trackerEmpty: document.getElementById("trackerEmpty"),
       activityFeed: document.getElementById("activityFeed"),
-      targetRole: document.getElementById("targetRole"),
-      targetCompany: document.getElementById("targetCompany"),
-      interviewDate: document.getElementById("interviewDate"),
-      experienceLevel: document.getElementById("experienceLevel"),
       themeToggleBtn: document.getElementById("themeToggleBtn"),
-      profileEmail: document.getElementById("profileEmail"),
-      sidebarGroupToggles: document.querySelectorAll("[data-group-toggle]"),
-      sidebarGroups: document.querySelectorAll(".sidebar-group"),
       mobileMenuBtn: document.getElementById("mobileMenuBtn"),
       mainSidebar: document.getElementById("mainSidebar"),
-      clearFilterBtn: document.getElementById("clearFilterBtn")
+      clearFilterBtn: document.getElementById("clearFilterBtn"),
+      exportCsvBtn: document.getElementById("exportCsvBtn"),
+      exportPdfBtn: document.getElementById("exportPdfBtn")
     };
 
-    const state = {
-      records: [],
-      query: "",
-      statusFilter: "all",
-      activeFilter: "all",
-      target: { role: "", company: "", interviewDate: "", experienceLevel: "fresher" },
-      activity: []
-    };
+    let state = { records: [], query: "", activeFilter: "all", target: {}, activity: [] };
 
-    function applyTheme(theme) {
-      document.body.setAttribute("data-theme", theme);
-      localStorage.setItem(THEME_KEY, theme);
-    }
+    function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
-    function normalize(text) { return (text || "").trim().toLowerCase(); }
-    function questionId(question) { return normalize(question).replace(/[^a-z0-9]+/g, "-"); }
-
-    function looksLikeQuestionOrPrompt(line) {
-      if (!line || line.length < 15) return false;
-      const blacklist = ["linkedin", "posted on", "save this post", "follow me", "connect with me", "resume review", "referral", "lpa", "job search", "experience sharing", "introduced myself", "explained my", "discussed the", "hope this helps", "thanks for sharing", "interview experience", "round 1", "round 2", "round 3", "technical round", "hr round", "training starting soon", "register now", "free demo"];
-      const lowerLine = line.toLowerCase();
-      if (blacklist.some(word => lowerLine.includes(word))) return false;
-      if (line.trim().endsWith("?")) return true;
-      const questionStarters = /\b(explain|how|what|why|when|where|which|write|design|create|differentiate|compare|can you)\b/i;
-      return questionStarters.test(line);
-    }
-
-    function extractQuestions(text) {
-      const lines = (text || "").split(/\r?\n+/).map(l => l.trim()).filter(Boolean);
-      const extracted = [];
-      lines.forEach(line => {
-        if (line.includes("?")) {
-          line.split("?").forEach(chunk => {
-            const part = chunk.trim() + "?";
-            if (looksLikeQuestionOrPrompt(part)) extracted.push(part);
-          });
-        } else if (looksLikeQuestionOrPrompt(line)) {
-          extracted.push(line);
-        }
-      });
-      return [...new Set(extracted)];
-    }
-
-    function classifyQuestion(question) {
-      const text = normalize(question);
-      for (const cat of categories) {
-        if (cat.keywords.some(k => text.includes(k))) return cat.id;
+    function load() { 
+      const currentData = localStorage.getItem(STORAGE_KEY);
+      const oldData = localStorage.getItem(OLD_STORAGE_KEY);
+      if (currentData) { state = JSON.parse(currentData); } 
+      else if (oldData) {
+        const parsedOld = JSON.parse(oldData);
+        state.records = parsedOld.records || [];
+        state.target = parsedOld.target || {};
+        state.activity = parsedOld.activity || [];
+        save();
       }
+    }
+
+    function pushActivity(msg) {
+      state.activity.unshift({ msg, time: new Date().toLocaleTimeString() });
+      state.activity = state.activity.slice(0, 5);
+      render();
+    }
+
+    function classify(q) {
+      const text = q.toLowerCase();
+      for(let c of categories) if(c.keywords.some(k => text.includes(k))) return c.id;
       return "other";
     }
 
-    function pushActivity(message) {
-      state.activity.unshift({ id: `${Date.now()}`, message, time: new Date().toISOString() });
-      state.activity = state.activity.slice(0, 10);
-    }
-
-    function saveState() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ records: state.records, target: state.target, activity: state.activity }));
-    }
-
-    function loadState() {
-      try {
-        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-        if (!saved) return;
-        state.records = saved.records || [];
-        state.target = saved.target || state.target;
-        state.activity = saved.activity || [];
-        if(els.targetRole) els.targetRole.value = state.target.role || "";
-        if(els.targetCompany) els.targetCompany.value = state.target.company || "";
-        if(els.interviewDate) els.interviewDate.value = state.target.interviewDate || "";
-        if(els.experienceLevel) els.experienceLevel.value = state.target.experienceLevel || "fresher";
-      } catch (_) {}
-    }
-
-    function readinessPercent() {
-      if (!state.records.length) return 0;
-      const weighted = state.records.reduce((sum, record) => sum + (statusWeight[record.status] || 0), 0);
-      return Math.round((weighted / state.records.length) * 100);
-    }
-
-    function addQuestions(questions, sourceLabel = "manual") {
-      const existing = new Map(state.records.map((r) => [r.id, r]));
-      let added = 0;
-      questions.forEach(q => {
-        const id = questionId(q);
-        if (!existing.has(id)) {
-          state.records.push({ id, question: q, categoryId: classifyQuestion(q), status: "new", starred: false, note: "", reviewedAt: new Date().toISOString() });
-          added++;
-        }
+    function addQuestions(list) {
+      list.forEach(q => {
+        const id = Date.now() + Math.random();
+        state.records.push({ id, question: q, categoryId: classify(q), status: "new", starred: false, reviewedAt: new Date().toISOString() });
       });
-      if (added > 0) pushActivity(`Imported ${added} entries from ${sourceLabel}`);
-      saveState();
-      render();
+      save(); pushActivity(`Added ${list.length} questions`);
     }
 
-    function updateRecord(id, patch) {
-      state.records = state.records.map(r => r.id === id ? { ...r, ...patch, reviewedAt: new Date().toISOString() } : r);
-      saveState();
-      render();
+    // CORE FIXES: Pass ID as string and use Array.map
+    function toggleStar(id) {
+      state.records = state.records.map(r => r.id == id ? {...r, starred: !r.starred} : r);
+      save(); render();
     }
 
-    function removeQuestion(id) {
-      state.records = state.records.filter(r => r.id !== id);
-      saveState();
-      render();
+    function updateStatus(id, val) {
+      state.records = state.records.map(r => r.id == id ? {...r, status: val} : r);
+      save(); render();
     }
 
-    // NEW: Function to filter by topic and jump to registry
+window.removeQ = function(id) {
+    console.log("Delete button clicked for ID:", id); // This lets you check the console
+    
+    // Force both to strings to avoid ANY type mismatch
+    const targetId = String(id);
+    
+    const initialCount = state.records.length;
+    state.records = state.records.filter(r => String(r.id) !== targetId);
+    
+    if (state.records.length < initialCount) {
+        console.log("Item successfully removed from state.");
+        save();   // Save to local storage
+        render(); // Update the screen
+    } else {
+        console.error("Item not found. Check if ID exists in state.");
+    }
+};
+
+    function exportCSV() {
+      if(!state.records.length) return alert("No data");
+      let csv = "Question,Topic,Difficulty,Status\n";
+      state.records.forEach(r => {
+        const cat = categories.find(c => c.id === r.categoryId) || categories[5];
+        csv += `"${r.question}","${cat.title}","${cat.difficulty}","${r.status}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'QA_Vault_Intelligence.csv'; a.click();
+      pushActivity("Exported CSV Report");
+    }
+
+    async function exportPDF() {
+      if(!state.records.length) return alert("No data");
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.text("QA Vault | Intelligence Registry", 14, 15);
+      const rows = state.records.map(r => {
+        const cat = categories.find(c => c.id === r.categoryId) || categories[5];
+        return [r.question, cat.title, cat.difficulty, r.status];
+      });
+      doc.autoTable({ head: [['Question', 'Topic', 'Difficulty', 'Status']], body: rows, startY: 20, theme: 'grid' });
+      doc.save('QA_Vault_Intelligence.pdf');
+      pushActivity("Exported PDF Report");
+    }
+
+    function renderDistribution() {
+      els.distGrid.innerHTML = categories.map(cat => {
+        const qns = state.records.filter(r => r.categoryId === cat.id);
+        const ready = qns.filter(r => r.status === 'ready').length;
+        const percent = qns.length ? Math.round((ready / qns.length) * 100) : 0;
+        let color = percent < 30 ? '#ef4444' : (percent < 70 ? '#fbbf24' : 'var(--accent-blue)');
+        return `<div class="dist-card glass-panel" onclick="filterByTopic('${cat.id}')">
+          <div class="dist-header" style="display:flex; justify-content:space-between; margin-bottom:10px;">
+            <strong>${cat.title}</strong><span style="opacity:0.6; font-size:12px;">${qns.length} Qns</span>
+          </div>
+          <div style="font-size:24px; font-weight:800;">${percent}% <span style="font-size:14px; font-weight:400; color:var(--text-muted);">Mastery</span></div>
+          <div class="progress-container"><div class="progress-bar" style="width:${percent}%; background:${color};"></div></div>
+        </div>`;
+      }).join("");
+    }
+
     function filterByTopic(topicId) {
       state.activeFilter = topicId;
-      // Switch view to tracker
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
       document.querySelector('[data-view="tracker"]').classList.add('active');
       document.querySelectorAll('.app-view').forEach(v => v.style.display = 'none');
@@ -518,136 +455,96 @@
     }
 
     function render() {
+      const filtered = state.records.filter(r => {
+        const matchesQuery = r.question.toLowerCase().includes(state.query);
+        const matchesTopic = state.activeFilter === "all" || r.categoryId === state.activeFilter;
+        return matchesQuery && matchesTopic;
+      });
+      
       els.totalQuestions.textContent = state.records.length;
       els.readyQuestions.textContent = state.records.filter(r => r.status === 'ready').length;
-      els.highPriority.textContent = state.records.filter(r => categories.find(c => c.id === r.categoryId)?.priority === 'high').length;
-      const rp = readinessPercent();
-      els.readinessScore.textContent = `${rp}%`;
-      els.readinessPercent.textContent = `${rp}%`;
-      els.readinessRing.style.background = `conic-gradient(var(--accent-blue) 0deg, var(--accent-purple) ${rp * 3.6}deg, #1e293b ${rp * 3.6}deg)`;
+      const rp = state.records.length ? Math.round((state.records.filter(r => r.status === 'ready').length / state.records.length) * 100) : 0;
+      els.readinessScore.textContent = rp + "%";
+      els.readinessPercent.textContent = rp + "%";
+      els.readinessRing.style.background = `conic-gradient(var(--accent-blue) 0deg, #1e293 la-background ${rp * 3.6}deg)`;
 
-      const filtered = state.records.filter(r => {
-        const matchesQuery = !state.query || r.question.toLowerCase().includes(state.query);
-        const matchesStatus = state.statusFilter === "all" || r.status === state.statusFilter;
-        const matchesTopic = state.activeFilter === "all" || r.categoryId === state.activeFilter;
-        return matchesQuery && matchesStatus && matchesTopic;
+      let registryHtml = "";
+      const groups = categories.filter(cat => filtered.some(r => r.categoryId === cat.id));
+
+      groups.forEach(cat => {
+        const catQns = filtered.filter(r => r.categoryId === cat.id);
+        registryHtml += `
+          <div class="topic-group-header"><span>${cat.title}</span><span style="font-size:12px; opacity:0.8;">${catQns.length} Questions</span></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Question</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody>
+                ${catQns.map(r => `
+                  <tr>
+                    <td>${r.question}</td>
+                    <td>
+                      <select onchange="updateStatus(${r.id}, this.value)" style="background:transparent; color:var(--text-main); font-size:12px; border:1px solid var(--glass-border);">
+                        <option value="new" ${r.status==='new'?'selected':''}>New</option>
+                        <option value="studying" ${r.status==='studying'?'selected':''}>Studying</option>
+                        <option value="ready" ${r.status==='ready'?'selected':''}>Ready</option>
+                      </select>
+                    </td>
+                    <td>
+                      <button class="star-btn ${r.starred?'star-active':''}" onclick="toggleStar(${r.id})">${r.starred?'★':'☆'}</button>
+                      <button class="btn btn-danger" style="padding:2px 5px;" onclick="removeQ('${r.id}')">🗑</button>
+
+                    </td>
+                  </tr>`).join("")}
+              </tbody>
+            </table>
+          </div>`;
       });
 
-      els.questionTracker.innerHTML = filtered.map(r => {
-        const cat = categories.find(c => c.id === r.categoryId) || categories[categories.length-1];
-        return `
-          <tr style="transition: var(--transition);">
-            <td>${r.question}</td>
-            <td><span class="badge">${cat.title}</span></td>
-            <td>${cat.difficulty}</td>
-            <td>
-              <select onchange="updateRecord('${r.id}', {status: this.value})" style="background:transparent; color:var(--text-main); border:1px solid var(--glass-border);">
-                <option value="new" ${r.status==='new'?'selected':''}>New</option>
-                <option value="studying" ${r.status==='studying'?'selected':''}>Studying</option>
-                <option value="revise" ${r.status==='revise'?'selected':''}>Revise</option>
-                <option value="ready" ${r.status==='ready'?'selected':''}>Ready</option>
-              </select>
-            </td>
-            <td style="font-size:11px; color:var(--text-muted)">${new Date(r.reviewedAt).toLocaleDateString()}</td>
-            <td>
-              <button class="btn btn-muted" style="padding:2px 5px;" onclick="updateRecord('${r.id}', {starred: ${!r.starred}})">${r.starred?'★':'☆'}</button>
-              <input class="note-input" value="${r.note}" placeholder="Notes..." onchange="updateRecord('${r.id}', {note: this.value})">
-              <button class="btn btn-danger" style="padding:2px 5px;" onclick="removeQuestion('${r.id}')">🗑</button>
-            </td>
-          </tr>`;
-      }).join("");
+      els.registryContent.innerHTML = registryHtml;
       els.trackerEmpty.style.display = filtered.length ? "none" : "block";
-
-      els.topicCards.innerHTML = categories.map(c => {
-        const count = state.records.filter(r => r.categoryId === c.id).length;
-        return `<div class="kpi-card glass-panel" onclick="filterByTopic('${c.id}')" style="cursor:pointer;">
-                  <strong style="font-size:14px;">${c.title}</strong>
-                  <div style="font-size:24px; margin-top:10px; font-weight:800;">${count}</div>
-                </div>`;
-      }).join("");
-
-      els.activityFeed.innerHTML = state.// Activity feed mapping (same as before)
-      els.activityFeed.innerHTML = state.activity.map(a => `<div class="feed-item glass-panel" style="padding:12px; font-size:12px; display:flex; justify-content:space-between; align-items:center;"><span>${a.message}</span><span style="opacity:0.5">${new Date(a.time).toLocaleTimeString()}</span></div>`).join("");
+      els.activityFeed.innerHTML = state.activity.map(a => `<div class="glass-panel" style="padding:10px; font-size:12px; display:flex; justify-content:space-between;"><span>${a.msg}</span><span style="opacity:0.5">${a.time}</span></div>`).join("");
+      renderDistribution();
     }
 
-    els.segregateBtn.addEventListener("click", () => {
-      const qs = extractQuestions(els.questionInput.value);
-      if(qs.length) addQuestions(qs, "manual");
-      els.questionInput.value = "";
-    });
-
-    els.sampleBtn.addEventListener("click", () => {
-        els.questionInput.value = "How do you handle stale element exceptions?\nHow to design a Page Object Model?\nWhat is the difference between findElement and findElements?";
-        els.segregateBtn.click();
-    });
-
-    els.extractLinkedinBtn.addEventListener("click", () => {
-      const qs = extractQuestions(els.linkedinText.value);
-      if(qs.length) addQuestions(qs, "LinkedIn");
-      else alert("No questions found in the text.");
-    });
-
-    els.fetchLinkedinBtn.addEventListener("click", async () => {
-      const url = els.linkedinUrl.value;
-      if(!url) return;
-      els.linkedinStatus.textContent = "Querying Neural Proxy...";
-      try {
-        const resp = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
-        const data = await resp.json();
-        const html = data.contents;
-        const match = html.match(/<div class="[^>]*break-word[^>]*">([\s\S]*?)<\/div>/) || html.match(/<span class="[^>]*break-word[^>]*">([\s\S]*?)<\/span>/);
-        if(match) {
-          els.linkedinText.value = match[1].replace(/<[^>]*>/g, ' ');
-          els.linkedinStatus.textContent = "Data synced. Click Extract.";
-        } else { throw new Error(); }
-      } catch(e) {
-        els.linkedinStatus.textContent = "Proxy blocked. Paste manually.";
-      }
-    });
-
-    els.themeToggleBtn.addEventListener("click", () => applyTheme(document.body.getAttribute("data-theme") === "dark" ? "light" : "dark"));
-    
     document.querySelectorAll('.nav-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         document.querySelectorAll('.app-view').forEach(v => v.style.display = 'none');
-        const view = document.getElementById(`view-${btn.dataset.view}`);
-        if(view) view.style.display = 'block';
-        if(window.innerWidth <= 768) els.mainSidebar.classList.remove('open');
+        document.getElementById(`view-${btn.dataset.view}`).style.display = 'block';
+        state.activeFilter = "all";
+        els.mainSidebar.classList.remove('open');
+        render();
       });
     });
 
-    els.viewQuestionsBtn.addEventListener("click", () => {
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.querySelector('[data-view="tracker"]').classList.add('active');
-      document.querySelectorAll('.app-view').forEach(v => v.style.display = 'none');
-      document.getElementById('view-tracker').style.display = 'block';
+    els.segregateBtn.addEventListener("click", () => {
+      const text = els.questionInput.value;
+      const qs = text.split('\n').filter(l => l.trim().length > 10);
+      addQuestions(qs);
+      els.questionInput.value = "";
     });
 
-    els.clearFilterBtn.addEventListener("click", () => {
-      state.activeFilter = "all";
-      render();
+    els.sampleBtn.addEventListener("click", () => {
+      els.questionInput.value = "How to handle stale element exception?\nWhat is Page Object Model?\nHow to perform API testing in Selenium?";
+      els.segregateBtn.click();
+    });
+
+    els.exportCsvBtn.addEventListener("click", exportCSV);
+    els.exportPdfBtn.addEventListener("click", exportPDF);
+    els.themeToggleBtn.addEventListener("click", () => {
+      const theme = document.body.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      document.body.setAttribute("data-theme", theme);
+      localStorage.setItem(THEME_KEY, theme);
     });
 
     els.mobileMenuBtn.addEventListener("click", () => els.mainSidebar.classList.toggle("open"));
-    
-    els.sidebarGroupToggles.forEach(t => {
-      t.addEventListener("click", () => {
-        const g = document.querySelector(`.sidebar-group[data-group="${t.getAttribute("data-group")}"]`);
-        if(g) g.classList.toggle("collapsed");
-      });
-    });
-
     els.searchInput.addEventListener("input", e => { state.query = e.target.value.toLowerCase(); render(); });
-    els.statusFilter.addEventListener("change", e => { state.statusFilter = e.target.value; render(); });
+    els.viewQuestionsBtn.addEventListener("click", () => { document.querySelector('[data-view="tracker"]').click(); });
+    els.clearFilterBtn.addEventListener("click", () => { state.activeFilter = "all"; render(); });
 
-    [ ["targetRole", "role"], ["targetCompany", "company"], ["interviewDate", "interviewDate"], ["experienceLevel", "experienceLevel"] ].forEach(([id, key]) => {
-      if(els[id]) els[id].addEventListener("input", e => { state.target[key] = e.target.value; saveState(); });
-    });
-
-    loadState();
-    applyTheme(localStorage.getItem(THEME_KEY) || "dark");
+    load();
+    document.body.setAttribute("data-theme", localStorage.getItem(THEME_KEY) || "dark");
     render();
   </script>
 </body>
