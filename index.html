@@ -1,9 +1,14 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QA Vault | Interview Intelligence</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta name="theme-color" content="#05070a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>QA Prep Hub | Interview Intelligence</title>
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
@@ -24,6 +29,8 @@
       --radius-m: 12px;
       --transition: all 0.2s ease;
       --sidebar-width: 280px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
 
     body[data-theme="light"] {
@@ -36,16 +43,18 @@
       --accent-purple: #7c3aed;
     }
 
-    * { box-sizing: border-box; outline: none; }
+    * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+    html, body { overscroll-behavior: none; }
     body {
       margin: 0; 
       font-family: 'Inter', system-ui, -apple-system, sans-serif; 
       color: var(--text-main);
       background-color: var(--bg-color);
       transition: background 0.3s ease;
+      min-height: 100vh;
+      padding-bottom: var(--safe-bottom);
     }
 
-    /* Fixed Sidebar Layout */
     .sidebar {
       position: fixed; left: 0; top: 0; bottom: 0;
       width: var(--sidebar-width);
@@ -54,16 +63,19 @@
       padding: 30px 20px;
       z-index: 100;
       overflow-y: auto;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      -webkit-overflow-scrolling: touch;
     }
     .main-content {
       margin-left: var(--sidebar-width);
       min-height: 100vh;
       padding: 30px;
+      transition: margin-left 0.3s ease;
     }
 
     .bg-glow {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      z-index: -1; overflow: hidden;
+      z-index: -1; overflow: hidden; pointer-events: none;
     }
     .blob {
       position: absolute; width: 600px; height: 600px;
@@ -77,18 +89,32 @@
     .glass-panel {
       background: var(--glass-bg);
       backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid var(--glass-border);
       border-radius: var(--radius-xl);
     }
 
-    .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; font-size: 22px; font-weight: 800; }
-    .logo-mark { width: 32px; height: 32px; border-radius: 10px; background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); box-shadow: var(--neon-glow); }
+    .logo { 
+      display: flex; align-items: center; gap: 12px; 
+      margin-bottom: 40px; 
+      font-size: 22px; font-weight: 800; 
+    }
+    .logo-mark { 
+      width: 36px; height: 36px; 
+      border-radius: 10px; 
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); 
+      box-shadow: var(--neon-glow); 
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .logo-mark svg { width: 22px; height: 22px; }
 
     .nav-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
     .nav-btn {
       width: 100%; border: 0; background: transparent; display: flex; align-items: center; gap: 12px;
       padding: 12px 16px; border-radius: var(--radius-m); color: var(--text-muted); 
       font-weight: 500; cursor: pointer; transition: var(--transition);
+      min-height: 44px;
     }
     .nav-btn:hover, .nav-btn.active { background: rgba(255,255,255,0.05); color: var(--text-main); transform: translateX(5px); }
     .nav-btn.active { border-left: 4px solid var(--accent-blue); background: linear-gradient(90deg, rgba(59,130,246,0.1), transparent); }
@@ -98,46 +124,62 @@
       width: 100%; padding: 12px; border: 0; background: transparent; color: var(--text-main);
       font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer; 
       display: flex; justify-content: space-between; align-items: center;
+      min-height: 44px;
     }
     .sidebar-group-body { padding: 15px; display: grid; gap: 12px; }
-    .collapsed .sidebar-group-body { display: none; }
 
     input, select, textarea {
       width: 100%; border: 1px solid var(--glass-border); border-radius: 8px; background: rgba(0,0,0,0.3);
-      padding: 10px 12px; color: var(--text-main); transition: var(--transition);
+      padding: 12px; color: var(--text-main); transition: var(--transition); font-family: inherit;
+      font-size: 15px; -webkit-appearance: none;
     }
     body[data-theme="light"] select, body[data-theme="light"] input { background: #fff; color: #000; border: 1px solid #ccc; }
 
     .btn { 
-      border-radius: 8px; padding: 10px 16px; font-weight: 600; cursor: pointer; 
+      border-radius: 8px; padding: 12px 16px; font-weight: 600; cursor: pointer; 
       transition: var(--transition); border: 1px solid transparent;
       display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      min-height: 44px; font-size: 14px; white-space: nowrap;
     }
     .btn-primary { background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); color: white; box-shadow: var(--neon-glow); }
     .btn-muted { background: rgba(255,255,255,0.05); color: var(--text-main); border: 1px solid var(--glass-border); }
     .btn-danger { background: #ef4444; color: white; }
 
     .header {
-      display: grid; grid-template-columns: 1fr auto auto; gap: 20px; align-items: center;
-      padding: 15px 25px; margin-bottom: 24px;
+      display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center;
+      padding: 15px 20px; margin-bottom: 24px;
     }
+    .header-right { display: flex; gap: 8px; align-items: center; }
+    .header-right .btn { padding: 10px 12px; min-height: 40px; }
 
-    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-    .kpi-card { padding: 24px; transition: var(--transition); cursor: pointer; }
-    .kpi-card:hover { transform: translateY(-5px); border-color: var(--accent-blue); }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .kpi-card { padding: 24px; transition: var(--transition); cursor: pointer; position: relative; }
+    .kpi-card:hover { transform: translateY(-5px); border-color: var(--accent-blue); background: rgba(59,130,246,0.1); }
     .kpi-head { color: var(--text-muted); font-size: 13px; font-weight: 500; margin-bottom: 10px; }
     .kpi-value { font-size: 36px; font-weight: 800; }
 
-    .table-wrap { overflow-x: auto; border-radius: var(--radius-xl); border: 1px solid var(--glass-border); margin-bottom: 20px; }
+    .table-wrap { 
+      overflow-x: auto; 
+      border-radius: var(--radius-xl); 
+      border: 1px solid var(--glass-border); 
+      margin-bottom: 20px; 
+      -webkit-overflow-scrolling: touch;
+      position: relative;
+    }
+    .table-wrap::after {
+      content: '← swipe →';
+      position: absolute; bottom: 8px; right: 12px;
+      font-size: 10px; color: var(--text-muted); opacity: 0.5;
+      pointer-events: none;
+    }
     table { width: 100%; border-collapse: collapse; min-width: 800px; }
-    th { padding: 15px; text-align: left; color: var(--text-muted); font-size: 11px; text-transform: uppercase; background: rgba(0,0,0,0.2); }
-    td { padding: 15px; border-bottom: 1px solid var(--glass-border); font-size: 14px; }
+    th { padding: 15px; text-align: left; color: var(--text-muted); font-size: 11px; text-transform: uppercase; background: rgba(0,0,0,0.2); font-weight: 600; }
+    td { padding: 15px; border-bottom: 1px solid var(--glass-border); font-size: 14px; word-break: break-word; vertical-align: middle; }
 
-    .badge { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: var(--accent-blue); color: white; }
-    
     .star-btn { 
       background: none !important; border: none !important; cursor: pointer; 
-      font-size: 20px; transition: var(--transition); color: var(--text-muted); padding: 0 10px;
+      font-size: 22px; transition: var(--transition); color: var(--text-muted); 
+      padding: 8px 12px; min-height: 36px; min-width: 36px;
     }
     .star-active { color: var(--star-gold) !important; text-shadow: 0 0 10px rgba(251, 191, 36, 0.8); }
 
@@ -148,11 +190,11 @@
     }
     .dist-card {
       padding: 20px; transition: var(--transition); cursor: pointer;
-      border: 1px solid var(--glass-border); position: relative; overflow: hidden;
+      border: 1px solid var(--glass-border); position: relative;
     }
-    .dist-card:hover { transform: scale(1.02); border-color: var(--accent-blue); background: rgba(255,255,255,0.05); }
-    .progress-container { height: 8px; background: rgba(0,0,0,0.3); border-radius: 4px; overflow: hidden; margin-top: 10px; }
-    .progress-bar { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+    .dist-card:hover, .dist-card:active { transform: scale(1.02); border-color: var(--accent-blue); background: rgba(255,255,255,0.05); }
+    .progress-container { height: 12px; background: rgba(0,0,0,0.4); border-radius: 6px; overflow: hidden; margin-top: 15px; border: 1px solid var(--glass-border); }
+    .progress-bar { height: 100%; border-radius: 6px; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
 
     .topic-group-header {
       background: linear-gradient(90deg, var(--accent-blue), transparent);
@@ -163,39 +205,122 @@
     body[data-theme="light"] .topic-group-header { background: linear-gradient(90deg, #dbeafe, transparent); color: var(--text-main); }
 
     .mobile-menu-btn {
-      display: none; position: fixed; bottom: 25px; right: 25px; 
-      width: 60px; height: 60px; border-radius: 50%; 
+      display: none; position: fixed; bottom: calc(25px + var(--safe-bottom)); right: 20px; 
+      width: 56px; height: 56px; border-radius: 50%; 
       background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); 
       color: white; border: none; font-size: 24px; z-index: 1000; cursor: pointer;
+      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.5);
+    }
+
+    .sidebar-backdrop {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6); z-index: 99;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    .sidebar-backdrop.active { display: block; }
+
+    @media (max-width: 1024px) {
+      .main-content { padding: 20px; }
     }
 
     @media (max-width: 768px) {
-      .sidebar { transform: translateX(-100%); }
+      .sidebar { 
+        transform: translateX(-100%); 
+        width: 85%; max-width: 320px;
+        box-shadow: 4px 0 20px rgba(0,0,0,0.5);
+      }
       .sidebar.open { transform: translateX(0); }
-      .main-content { margin-left: 0; }
+      .main-content { 
+        margin-left: 0; 
+        padding: 15px; 
+        padding-top: 15px;
+      }
       .mobile-menu-btn { display: flex; align-items: center; justify-content: center; }
-      .grid-4 { grid-template-columns: repeat(2, 1fr); }
+      
+      .grid-3 { grid-template-columns: 1fr; gap: 12px; }
+      .kpi-card { padding: 18px; }
+      .kpi-value { font-size: 28px; }
+      
+      .header { 
+        grid-template-columns: 1fr; 
+        padding: 12px 15px;
+        gap: 10px;
+      }
+      .header-right { 
+        justify-content: space-between; 
+        width: 100%;
+      }
+      .header #searchInput { 
+        order: 2;
+        font-size: 16px;
+      }
+      
+      .dist-grid { grid-template-columns: 1fr; }
+      .dist-card { padding: 18px; }
+      
+      td { padding: 12px 10px; font-size: 13px; }
+      td select { font-size: 13px; padding: 8px; }
+      
+      #view-tracker .glass-panel > div:first-child { flex-direction: column; align-items: stretch !important; }
+      #view-tracker .glass-panel > div:first-child > div { 
+        display: grid; 
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 8px;
+      }
+      #view-tracker .glass-panel > div:first-child > div .btn { 
+        font-size: 12px; 
+        padding: 10px 8px;
+      }
+      
+      .logo { font-size: 20px; }
+      .logo-mark { width: 32px; height: 32px; }
+      
+      .profile { display: none !important; }
+    }
+
+    @media (max-width: 480px) {
+      .main-content { padding: 10px; }
+      .kpi-value { font-size: 24px; }
+      .kpi-head { font-size: 11px; }
+      .grid-3 { gap: 10px; }
+      
+      #view-tracker .glass-panel > div:first-child > div { 
+        grid-template-columns: 1fr; 
+      }
+    }
+
+    @supports (padding: max(0px)) {
+      .mobile-menu-btn { bottom: max(25px, calc(20px + var(--safe-bottom))); }
+      .header { padding-top: max(15px, var(--safe-top)); }
     }
   </style>
 </head>
 <body data-theme="dark">
   <div class="bg-glow"><div class="blob"></div><div class="blob blob-2"></div></div>
-  <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu">☰</button>
 
   <aside class="sidebar" id="mainSidebar">
-    <div class="logo"><div class="logo-mark"></div><span>QA Vault</span></div>
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L3 7v6c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V7l-9-5z" fill="white" fill-opacity="0.95"/>
+          <path d="M8 12.5l2.5 2.5L16 9" stroke="#3b82f6" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span>QA Prep Hub</span>
+    </div>
     <ul class="nav-list">
       <li><button class="nav-btn active" data-view="dashboard">📊 Dashboard</button></li>
       <li><button class="nav-btn" data-view="tracker">📝 Registry</button></li>
       <li><button class="nav-btn" data-view="trends">🔥 Analysis</button></li>
-      <li><button class="nav-btn" data-view="readiness">🎯 Readiness</button></li>
-      <li><button class="nav-btn" data-view="settings">⚙️ Config</button></li>
     </ul>
     <div class="sidebar-tools">
       <div class="sidebar-group" data-group="intake">
         <button class="sidebar-group-toggle" data-group-toggle="intake">Ingestion <span>▾</span></button>
         <div class="sidebar-group-body">
-          <textarea id="questionInput" placeholder="Paste raw text..."></textarea>
+          <textarea id="questionInput" placeholder="Paste raw text or one question per line..." rows="4"></textarea>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;">
             <button id="segregateBtn" class="btn btn-primary">Segregate</button>
             <button id="sampleBtn" class="btn btn-muted">Sample</button>
@@ -205,12 +330,13 @@
       <div class="sidebar-group" data-group="imports">
         <button class="sidebar-group-toggle" data-group-toggle="imports">LinkedIn Sync <span>▾</span></button>
         <div class="sidebar-group-body">
-          <input id="linkedinUrl" type="url" placeholder="LinkedIn URL...">
+          <input id="linkedinUrl" type="url" placeholder="LinkedIn URL (optional)">
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;">
-            <button id="fetchLinkedinBtn" class="btn btn-muted">Fetch</button>
-            <button id="extractLinkedinBtn" class="btn btn-primary">Extract</button>
+            <button id="fetchLinkedinBtn" class="btn btn-muted">Try Fetch</button>
+            <button id="extractLinkedinBtn" class="btn btn-primary">Add to Vault</button>
           </div>
-          <textarea id="linkedinText" style="margin-top:10px;" placeholder="Paste post text..."></textarea>
+          <textarea id="linkedinText" style="margin-top:10px; min-height:100px;" placeholder="Paste post text here..."></textarea>
+          <div id="fetchStatus" style="font-size:11px; color:var(--text-muted); margin-top:4px; min-height:15px;"></div>
         </div>
       </div>
     </div>
@@ -218,23 +344,41 @@
 
   <main class="main-content">
     <header class="header glass-panel">
-      <input id="searchInput" type="search" placeholder="Query the vault...">
-      <button class="btn btn-muted" id="themeToggleBtn">🌓</button>
-      <div class="profile glass-panel" style="padding: 5px 15px; display:flex; align-items:center; gap:10px;">
-        <div class="logo-mark" style="width:20px; height:20px;"></div>
-        <strong style="font-size:12px;">QA Vault User</strong>
+      <input id="searchInput" type="search" placeholder="Search vault...">
+      <div class="header-right">
+        <button class="btn btn-muted" id="refreshBtn" title="Reload" aria-label="Reload">🔄</button>
+        <button class="btn btn-muted" id="themeToggleBtn" title="Theme" aria-label="Toggle theme">🌓</button>
+        <div class="profile glass-panel" style="padding: 5px 12px; display:flex; align-items:center; gap:8px;">
+          <div class="logo-mark" style="width:20px; height:20px; border-radius:6px;">
+            <svg viewBox="0 0 24 24" fill="none" style="width:14px; height:14px;">
+              <path d="M12 2L3 7v6c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V7l-9-5z" fill="white"/>
+              <path d="M8 12.5l2.5 2.5L16 9" stroke="#3b82f6" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <strong style="font-size:11px;">QA Prep Hub</strong>
+        </div>
       </div>
     </header>
 
     <div id="view-dashboard" class="app-view">
-      <div class="grid-4">
-        <div class="kpi-card glass-panel"><div class="kpi-head">Total Questions</div><div class="kpi-value" id="totalQuestions">0</div></div>
-        <div class="kpi-card glass-panel"><div class="kpi-head">Mastered</div><div class="kpi-value" id="readyQuestions">0</div></div>
-        <div class="kpi-card glass-panel"><div class="kpi-head">High Priority</div><div class="kpi-value" id="highPriority">0</div></div>
-        <div class="kpi-card glass-panel"><div class="kpi-head">Readiness Score</div><div class="kpi-value" id="readinessScore">0%</div></div>
+      <div class="grid-3">
+        <div class="kpi-card glass-panel" onclick="filterByStatus('all')">
+          <div class="kpi-head">Total Questions</div>
+          <div class="kpi-value" id="totalQuestions">0</div>
+          <div style="font-size:10px; opacity:0.5; margin-top:5px;">Tap to view all →</div>
+        </div>
+        <div class="kpi-card glass-panel" onclick="filterByStatus('ready')">
+          <div class="kpi-head">Mastered</div>
+          <div class="kpi-value" id="readyQuestions">0</div>
+          <div style="font-size:10px; opacity:0.5; margin-top:5px;">Tap to view ready →</div>
+        </div>
+        <div class="kpi-card glass-panel">
+          <div class="kpi-head">Readiness Score</div>
+          <div class="kpi-value" id="readinessScore">0%</div>
+        </div>
       </div>
-      <div class="glass-panel" style="margin-top:24px; padding:30px; background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.1)); border: 1px solid var(--accent-blue);">
-        <h2 style="margin-top:0;">Strategic Recommendation</h2>
+      <div class="glass-panel" style="margin-top:20px; padding:25px; background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.1)); border: 1px solid var(--accent-blue);">
+        <h2 style="margin-top:0; font-size:20px;">Strategic Recommendation</h2>
         <p id="nextAction">Analyzing vault data for optimal study path...</p>
         <button id="viewQuestionsBtn" class="btn btn-primary" style="margin-top:10px;">Open Registry</button>
       </div>
@@ -242,14 +386,14 @@
 
     <div id="view-tracker" class="app-view" style="display:none;">
       <div class="section glass-panel" style="padding:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-          <h2 style="margin:0;">Intelligence Registry</h2>
-          <div style="display:flex; gap:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+          <h2 style="margin:0; font-size:20px;">Intelligence Registry</h2>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button id="exportCsvBtn" class="btn btn-muted">📄 CSV</button>
             <button id="exportPdfBtn" class="btn btn-muted">📕 PDF</button>
-            <button onclick="deleteSelected()" class="btn btn-danger" style="background: #dc2626;">🗑 Delete Selected</button>
-            <button onclick="deleteFiltered()" class="btn btn-danger" style="background: #991b1b;">🧹 Clear Search</button>
-            <button id="clearFilterBtn" class="btn btn-muted">Clear Filter</button>
+            <button onclick="deleteSelected()" class="btn btn-danger">🗑 Delete</button>
+            <button onclick="deleteFiltered()" class="btn btn-danger" style="background: #991b1b;">🧹 Clear</button>
+            <button id="clearFilterBtn" class="btn btn-muted">Reset</button>
           </div>
         </div>
         <div id="registryContent"></div>
@@ -259,324 +403,374 @@
 
     <div id="view-trends" class="app-view" style="display:none;">
       <div class="section glass-panel" style="padding:20px;">
-        <h2 style="margin-bottom:20px;">Knowledge Distribution Map</h2>
+        <h2 style="margin-top:0; margin-bottom:20px; font-size:20px;">Knowledge Distribution</h2>
         <div id="distGrid" class="dist-grid"></div>
       </div>
-    </div>
-
-    <div id="view-readiness" class="app-view" style="display:none;">
-      <div class="section glass-panel" style="padding:20px; text-align:center;">
-        <h2 style="margin-bottom:20px;">Performance Metrics</h2>
-        <div id="readinessRing" style="width:200px; height:200px; border-radius:50%; margin: 0 auto; display:grid; place-items:center; background: conic-gradient(var(--accent-blue) 0deg, #1e293b 0deg);">
-          <div style="width:160px; height:160px; background: var(--bg-color); border-radius:50%; display:grid; place-items:center; border: 1px solid var(--glass-border);">
-            <strong id="readinessPercent" style="font-size:32px;">0%</strong>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="view-settings" class="app-view" style="display:none;">
-      <div class="section glass-panel" style="padding:20px;">
-        <h2 style="margin-bottom:20px;">Vault Configuration</h2>
-        <div class="grid-4" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px;">
-          <div style="display:flex; flex-direction:column; gap:5px;"><label>Target Role</label><input id="targetRole"></div>
-          <div style="display:flex; flex-direction:column; gap:5px;"><label>Target Company</label><input id="targetCompany"></div>
-          <div style="display:flex; flex-direction:column; gap:5px;"><label>Date</label><input id="interviewDate" type="date"></div>
-          <div style="display:flex; flex-direction:column; gap:5px;"><label>Level</label><select id="experienceLevel">
-            <option value="fresher">Fresher</option><option value="mid">Mid</option><option value="senior">Senior</option>
-          </select></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="glass-panel" style="margin-top:20px; padding:20px;">
-      <h3 style="margin-top:0;">Activity Stream</h3>
-      <div id="activityFeed" style="display:grid; gap:10px;"></div>
     </div>
   </main>
 
   <script>
     const STORAGE_KEY = "qaVault_State_v3"; 
-    const OLD_STORAGE_KEY = "qaInterviewIntelligenceStateV2"; 
+    const LEGACY_KEY = "qaInterviewIntelligenceStateV2";
     const THEME_KEY = "qaVault_Theme_v3";
 
     const categories = [
-      { id: "selenium", title: "Selenium", difficulty: "Medium", keywords: ["selenium", "webdriver", "xpath", "stale", "wait"] },
-      { id: "playwright", title: "Playwright", difficulty: "Medium", keywords: ["playwright", "trace", "locator", "fixture"] },
-      { id: "api", title: "API Testing", difficulty: "High", keywords: ["api", "rest", "postman", "json", "status code", "schema"] },
-      { id: "framework", title: "Framework", difficulty: "High", keywords: ["pom", "framework", "design pattern", "hybrid"] },
-      { id: "manual", title: "Manual", difficulty: "Low", keywords: ["manual", "test case", "smoke", "sanity", "regression"] },
-      { id: "other", title: "General", difficulty: "Low", keywords: [] }
+      { id: "selenium", title: "Selenium" },
+      { id: "playwright", title: "Playwright" },
+      { id: "api", title: "API Testing" },
+      { id: "framework", title: "Framework" },
+      { id: "manual", title: "Manual" },
+      { id: "other", title: "General" }
     ];
 
-    const els = {
-      questionInput: document.getElementById("questionInput"),
-      segregateBtn: document.getElementById("segregateBtn"),
-      sampleBtn: document.getElementById("sampleBtn"),
-      linkedinUrl: document.getElementById("linkedinUrl"),
-      fetchLinkedinBtn: document.getElementById("fetchLinkedinBtn"),
-      extractLinkedinBtn: document.getElementById("extractLinkedinBtn"),
-      linkedinText: document.getElementById("linkedinText"),
-      searchInput: document.getElementById("searchInput"),
-      totalQuestions: document.getElementById("totalQuestions"),
-      readyQuestions: document.getElementById("readyQuestions"),
-      highPriority: document.getElementById("highPriority"),
-      readinessScore: document.getElementById("readinessScore"),
-      readinessPercent: document.getElementById("readinessPercent"),
-      readinessRing: document.getElementById("readinessRing"),
-      nextAction: document.getElementById("nextAction"),
-      viewQuestionsBtn: document.getElementById("viewQuestionsBtn"),
-      distGrid: document.getElementById("distGrid"),
-      registryContent: document.getElementById("registryContent"),
-      trackerEmpty: document.getElementById("trackerEmpty"),
-      activityFeed: document.getElementById("activityFeed"),
-      themeToggleBtn: document.getElementById("themeToggleBtn"),
-      mobileMenuBtn: document.getElementById("mobileMenuBtn"),
-      mainSidebar: document.getElementById("mainSidebar"),
-      clearFilterBtn: document.getElementById("clearFilterBtn"),
-      exportCsvBtn: document.getElementById("exportCsvBtn"),
-      exportPdfBtn: document.getElementById("exportPdfBtn")
-    };
+    function sanitizeText(text) {
+      if (!text || typeof text !== 'string') return '';
+      let cleaned = text;
+      const txt = document.createElement("textarea");
+      txt.innerHTML = cleaned;
+      cleaned = txt.value;
+      cleaned = cleaned.replace(/(https?:\/\/[^\s]+)|(www\.[^\s]+)/gi, '');
+      cleaned = cleaned.replace(/[#@]\w+/g, '');
+      cleaned = cleaned.replace(/[\u{1F600}-\u{1F64F}]/gu, '').replace(/[\u{1F300}-\u{1F5FF}]/gu, '')
+        .replace(/[\u{1F680}-\u{1F6FF}]/gu, '').replace(/[\u{1F1E0}-\u{1F1FF}]/gu, '')
+        .replace(/[\u{2600}-\u{26FF}]/gu, '').replace(/[\u{2700}-\u{27BF}]/gu, '')
+        .replace(/[\u{FE00}-\u{FE0F}]/gu, '').replace(/[\u{1F900}-\u{1F9FF}]/gu, '')
+        .replace(/[\u{200D}]/gu, '');
+      cleaned = cleaned.replace(/[\u2018\u2019\u201A\u201B]/g, "'")
+        .replace(/[\u201C\u201D\u201E\u201F]/g, '"')
+        .replace(/[\u2013\u2014\u2015]/g, '-')
+        .replace(/\u2026/g, '...').replace(/\u00A0/g, ' ');
+      cleaned = cleaned.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
+      cleaned = cleaned.replace(/\s+/g, ' ').trim();
+      return cleaned;
+    }
 
-    let state = { records: [], query: "", activeFilter: "all", target: {}, activity: [], selectedIds: new Set() };
+    let idCounter = 0;
+    function generateUniqueId() {
+      idCounter++;
+      return `q_${Date.now()}_${idCounter}_${Math.floor(Math.random() * 1000000)}`;
+    }
 
-    function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, selectedIds: Array.from(state.selectedIds) })); }
+    let state = { records: [], query: "", activeFilter: "all", statusFilter: "all", selectedIds: [] };
+
+    function save() { 
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } 
+      catch(e) { console.error("Save failed", e); }
+    }
     
     function load() { 
       const currentData = localStorage.getItem(STORAGE_KEY);
-      const oldData = localStorage.getItem(OLD_STORAGE_KEY);
+      const legacyData = localStorage.getItem(LEGACY_KEY);
       if (currentData) { 
         const parsed = JSON.parse(currentData);
-        state = parsed;
-        state.selectedIds = new Set(parsed.selectedIds || []);
-      } else if (oldData) {
-        const parsedOld = JSON.parse(oldData);
+        state.records = parsed.records || [];
+        state.selectedIds = parsed.selectedIds || [];
+      } else if (legacyData) {
+        const parsedOld = JSON.parse(legacyData);
         state.records = parsedOld.records || [];
-        state.target = parsedOld.target || {};
-        state.activity = parsedOld.activity || [];
+        state.selectedIds = [];
         save();
       }
-    }
-
-    function pushActivity(msg) {
-      state.activity.unshift({ msg, time: new Date().toLocaleTimeString() });
-      state.activity = state.slicing ? state.activity.slice(0, 5) : state.activity.slice(0, 5);
-      render();
+      let needsSave = false;
+      state.records = state.records.map(r => {
+        const cleaned = sanitizeText(r.question);
+        if (cleaned !== r.question) { needsSave = true; return { ...r, question: cleaned }; }
+        return r;
+      });
+      if (needsSave) save();
     }
 
     function classify(q) {
       const text = q.toLowerCase();
-      for(let c of categories) if(c.keywords.some(k => text.includes(k))) return c.id;
+      if(text.includes("api") || text.includes("rest")) return "api";
+      if(text.includes("selenium") || text.includes("webdriver")) return "selenium";
+      if(text.includes("playwright")) return "playwright";
+      if(text.includes("pom") || text.includes("framework")) return "framework";
+      if(text.includes("manual") || text.includes("smoke")) return "manual";
       return "other";
     }
 
     function addQuestions(list) {
       list.forEach(q => {
-        const id = Date.now() + Math.random();
-        state.records.push({ id, question: q, categoryId: classify(q), status: "new", starred: false, reviewedAt: new Date().toISOString() });
+        const cleaned = sanitizeText(q);
+        if (cleaned.length < 5) return;
+        state.records.push({ id: generateUniqueId(), question: cleaned, categoryId: classify(cleaned), status: "new", starred: false });
       });
-      save(); pushActivity(`Added ${list.length} questions`);
+      save(); forceRender();
     }
 
-    // CORE FUNCTIONS
+    function forceRender() {
+      try {
+        const total = state.records.length;
+        const ready = state.records.filter(r => r.status === 'ready').length;
+        const rp = total ? Math.round((ready / total) * 100) : 0;
+
+        document.getElementById("totalQuestions").textContent = total;
+        document.getElementById("readyQuestions").textContent = ready;
+        document.getElementById("readinessScore").textContent = rp + "%";
+
+        const grid = document.getElementById("distGrid");
+        if (grid) {
+          let html = "";
+          categories.forEach(cat => {
+            const qns = state.records.filter(r => r.categoryId === cat.id);
+            const readyCount = qns.filter(r => r.status === 'ready').length;
+            const percent = qns.length ? Math.round((readyCount / qns.length) * 100) : 0;
+            let color = percent < 30 ? '#ef4444' : (percent < 70 ? '#fbbf24' : 'var(--accent-blue)');
+            html += `<div class="dist-card glass-panel" onclick="filterByTopic('${cat.id}')">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <strong style="font-size:16px;">${cat.title}</strong>
+                <span style="opacity:0.6; font-size:12px; background:rgba(0,0,0,0.3); padding:2px 8px; border-radius:10px;">${qns.length} Qns</span>
+              </div>
+              <div style="font-size:28px; font-weight:800;">${percent}% <span style="font-size:14px; font-weight:400; color:var(--text-muted); margin-left:5px;">Mastery</span></div>
+              <div class="progress-container"><div class="progress-bar" style="width:${percent}%; background:${color}; box-shadow: 0 0 10px ${color}aa;"></div></div>
+            </div>`;
+          });
+          grid.innerHTML = html;
+        }
+
+        const filtered = state.records.filter(r => {
+          const matchesQuery = r.question.toLowerCase().includes(state.query);
+          const matchesTopic = state.activeFilter === "all" || r.categoryId === state.activeFilter;
+          const matchesStatus = state.statusFilter === "all" || r.status === state.statusFilter;
+          return matchesQuery && matchesTopic && matchesStatus;
+        });
+
+        const regContainer = document.getElementById("registryContent");
+        const emptyState = document.getElementById("trackerEmpty");
+        if (regContainer) {
+          let html = "";
+          const groups = categories.filter(cat => filtered.some(r => r.categoryId === cat.id));
+          if (groups.length === 0 && filtered.length > 0) groups.push(categories[5]);
+
+          groups.forEach(cat => {
+            const catQns = filtered.filter(r => r.categoryId === cat.id);
+            html += `
+              <div class="topic-group-header"><span>${cat.title}</span><span style="font-size:12px; opacity:0.8;">${catQns.length} Q</span></div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>✓</th><th>Question</th><th>Status</th><th>Act</th></tr></thead>
+                  <tbody>
+                    ${catQns.map(r => `
+                      <tr>
+                        <td><input type="checkbox" ${state.selectedIds.includes(r.id) ? 'checked' : ''} onclick="toggleSelect('${r.id}')"></td>
+                        <td>${r.question}</td>
+                        <td>
+                          <select onchange="changeStatus('${r.id}', this.value)">
+                            <option value="new" ${r.status==='new'?'selected':''}>New</option>
+                            <option value="studying" ${r.status==='studying'?'selected':''}>Study</option>
+                            <option value="ready" ${r.status==='ready'?'selected':''}>Ready</option>
+                          </select>
+                        </td>
+                        <td>
+                          <button class="star-btn ${r.starred?'star-active':''}" onclick="toggleStar('${r.id}')">${r.starred?'★':'☆'}</button>
+                          <button class="btn btn-danger" style="padding:6px 8px; min-height:32px;" onclick="removeQ('${r.id}')">🗑</button>
+                        </td>
+                      </tr>`).join("")}
+                  </tbody>
+                </table>
+              </div>`;
+          });
+          regContainer.innerHTML = html;
+          if(emptyState) emptyState.style.display = filtered.length ? "none" : "block";
+        }
+      } catch (e) { console.error("Render Error", e); }
+    }
+
+    window.changeStatus = function(id, val) {
+      const rec = state.records.find(r => r.id === id);
+      if (rec) { rec.status = val; save(); forceRender(); }
+    };
     window.toggleStar = function(id) {
-      state.records = state.records.map(r => r.id == id ? {...r, starred: !r.starred} : r);
-      save(); render();
+      const rec = state.records.find(r => r.id === id);
+      if (rec) { rec.starred = !rec.starred; save(); forceRender(); }
     };
-
-    window.updateStatus = function(id, val) {
-      state.records = state.records.map(r => r.id == id ? {...r, status: val} : r);
-      save(); render();
-    };
-
     window.removeQ = function(id) {
-      state.records = state.records.filter(r => r.id != id);
-      save(); render();
+      state.records = state.records.filter(r => r.id !== id);
+      save(); forceRender();
     };
-
-    // MULTI-SELECT LOGIC
     window.toggleSelect = function(id) {
-      const sId = String(id);
-      state.selectedIds.has(sId) ? state.selectedIds.delete(sId) : state.selectedIds.add(sId);
-      render();
+      if (state.selectedIds.includes(id)) state.selectedIds = state.selectedIds.filter(x => x !== id);
+      else state.selectedIds.push(id);
+      save(); forceRender();
     };
-
     window.selectAllFiltered = function() {
       const filtered = state.records.filter(r => {
-        const matchesQuery = r.question.toLowerCase().includes(state.query);
-        const matchesTopic = state.activeFilter === "all" || r.categoryId === state.activeFilter;
-        return matchesQuery && matchesTopic;
+        return (state.activeFilter === "all" || r.categoryId === state.activeFilter) &&
+               (state.statusFilter === "all" || r.status === state.statusFilter) &&
+               r.question.toLowerCase().includes(state.query);
       });
-      filtered.forEach(r => state.selectedIds.add(String(r.id)));
-      render();
+      filtered.forEach(r => { if (!state.selectedIds.includes(r.id)) state.selectedIds.push(r.id); });
+      save(); forceRender();
     };
-
     window.deleteSelected = function() {
-      if (state.selectedIds.size === 0) return alert("Please select items to delete.");
-      if (!confirm(`Delete ${state.selectedIds.size} selected questions?`)) return;
-      
-      state.records = state.records.filter(r => !state.selectedIds.has(String(r.id)));
-      state.selectedIds.clear();
-      save();
-      pushActivity(`Bulk Deleted ${state.selectedIds.size} entries`);
-      render();
+      if (state.selectedIds.length === 0) return alert("Please select items to delete.");
+      if (!confirm(`Delete ${state.selectedIds.length} selected questions?`)) return;
+      state.records = state.records.filter(r => !state.selectedIds.includes(r.id));
+      state.selectedIds = [];
+      save(); forceRender();
     };
-
     window.deleteFiltered = function() {
-      if (!state.query) return alert("Please search for a keyword first to use this feature.");
+      if (!state.query) return alert("Search for a keyword first.");
       if (!confirm(`Delete ALL questions matching "${state.query}"?`)) return;
-
-      const initialCount = state.records.length;
       state.records = state.records.filter(r => !r.question.toLowerCase().includes(state.query));
-      state.selectedIds.clear();
-      save();
-      pushActivity(`Vault Clean: Deleted ${initialCount - state.records.length} entries`);
-      render();
+      state.selectedIds = [];
+      save(); forceRender();
     };
+    window.filterByStatus = function(status) {
+      state.statusFilter = status; state.activeFilter = "all";
+      switchView("tracker");
+    };
+    window.filterByTopic = function(topicId) {
+      state.activeFilter = topicId; state.statusFilter = "all";
+      switchView("tracker");
+    };
+
+    function setFetchStatus(msg, color) {
+      const el = document.getElementById('fetchStatus');
+      if (el) { el.textContent = msg; el.style.color = color || 'var(--text-muted)'; }
+    }
+
+    async function fetchLinkedIn() {
+      const url = document.getElementById('linkedinUrl').value.trim();
+      if (!url) return alert("Please paste a LinkedIn URL first.");
+      if (!url.includes('linkedin.com')) return alert("URL must be from linkedin.com");
+      setFetchStatus("Attempting fetch...", "#fbbf24");
+      const proxies = [
+        `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+        `https://corsproxy.io/?${encodeURIComponent(url)}`
+      ];
+      for (const proxyUrl of proxies) {
+        try {
+          const response = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
+          if (!response.ok) continue;
+          let html;
+          const contentType = response.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            const data = await response.json();
+            html = data.contents;
+          } else { html = await response.text(); }
+          if (!html || html.length < 200) continue;
+          html = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ');
+          let text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+          text = sanitizeText(text);
+          document.getElementById('linkedinText').value = text.substring(0, 5000);
+          setFetchStatus("✓ Fetched & cleaned! Review and click 'Add to Vault'.", "#22c55e");
+          return;
+        } catch (err) { continue; }
+      }
+      setFetchStatus("✕ Blocked. Please copy-paste post text manually below.", "#ef4444");
+    }
+
+    function extractLinkedIn() {
+      const rawText = document.getElementById('linkedinText').value.trim();
+      if (!rawText) return alert("Please paste post text into the box first.");
+      let lines = rawText.split(/\n+/);
+      if (lines.length < 2) lines = rawText.split(/(?<=\?)\s*(?=\d+[\.\)]\s*|[A-Z][a-z])/);
+      if (lines.length < 2) lines = rawText.split(/\s+(?=\d+[\.\)]\s+[A-Z])/);
+      if (lines.length < 2) lines = rawText.split(/\?\s*(?=[A-Z])/);
+      const validQuestions = lines
+        .map(l => sanitizeText(l).replace(/^\d+[\.\)]\s*/, '').replace(/^[-•*]\s*/, '').trim())
+        .filter(l => l.length > 10 && l.length < 500)
+        .filter(l => !l.match(/^(Sign Up|Sign In|LinkedIn|Cookie|Privacy|User Agreement|Home|My Network|Jobs|Messaging|Notifications|Me|Like|Comment|Repost|Send|Follow|Share|see more|Show more|Suggested|Read more|\d+\s*(reactions|comments)|Premium|Log in)/i))
+        .filter(l => l.includes('?') || l.match(/\b(what|how|why|when|where|which|explain|describe|difference|tell me)\b/i));
+      if (validQuestions.length === 0) return alert("No questions detected. Tips:\n• Each question should end with '?'\n• Separate by new lines\n• Or use: 1. Question  2. Question");
+      addQuestions(validQuestions);
+      setFetchStatus(`✓ Added ${validQuestions.length} questions!`, "#22c55e");
+      document.getElementById('linkedinText').value = "";
+    }
 
     function exportCSV() {
       if(!state.records.length) return alert("No data");
-      let csv = "Question,Topic,Difficulty,Status\n";
+      let csv = "Question,Topic,Status\n";
       state.records.forEach(r => {
         const cat = categories.find(c => c.id === r.categoryId) || categories[5];
-        csv += `"${r.question}","${cat.title}","${cat.difficulty}","${r.status}"\n`;
+        csv += `"${r.question}","${cat.title}","${r.status}"\n`;
       });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = 'QA_Vault_Report.csv'; a.click();
+      a.href = url; a.download = 'QA_Prep_Hub_Report.csv'; a.click();
     }
-
     async function exportPDF() {
       if(!state.records.length) return alert("No data");
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
-      doc.text("QA Vault | Intelligence Registry", 14, 15);
+      doc.text("QA Prep Hub | Intelligence Registry", 14, 15);
       const rows = state.records.map(r => {
         const cat = categories.find(c => c.id === r.categoryId) || categories[5];
-        return [r.question, cat.title, cat.difficulty, r.status];
+        return [r.question, cat.title, r.status];
       });
-      doc.autoTable({ head: [['Question', 'Topic', 'Difficulty', 'Status']], body: rows, startY: 20, theme: 'grid' });
-      doc.save('QA_Vault_Report.pdf');
+      doc.autoTable({ head: [['Question', 'Topic', 'Status']], body: rows, startY: 20, theme: 'grid' });
+      doc.save('QA_Prep_Hub_Report.pdf');
     }
 
-    function renderDistribution() {
-      els.distGrid.innerHTML = categories.map(cat => {
-        const qns = state.records.filter(r => r.categoryId === cat.id);
-        const ready = qns.filter(r => r.status === 'ready').length;
-        const percent = qns.length ? Math.round((ready / qns.length) * 100) : 0;
-        let color = percent < 30 ? '#ef4444' : (percent < 70 ? '#fbbf24' : 'var(--accent-blue)');
-        return `<div class="dist-card glass-panel" onclick="filterByTopic('${cat.id}')">
-          <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-            <strong>${cat.title}</strong><span style="opacity:0.6; font-size:12px;">${qns.length} Qns</span>
-          </div>
-          <div style="font-size:24px; font-weight:800;">${percent}% <span style="font-size:14px; font-weight:400; color:var(--text-muted);">Mastery</span></div>
-          <div class="progress-container"><div class="progress-bar" style="width:${percent}%; background:${color};"></div></div>
-        </div>`;
-      }).join("");
-    }
-
-    function filterByTopic(topicId) {
-      state.activeFilter = topicId;
+    function switchView(viewName) {
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.querySelector('[data-view="tracker"]').classList.add('active');
+      const btn = document.querySelector(`[data-view="${viewName}"]`);
+      if(btn) btn.classList.add('active');
       document.querySelectorAll('.app-view').forEach(v => v.style.display = 'none');
-      document.getElementById('view-tracker').style.display = 'block';
-      render();
+      const view = document.getElementById(`view-${viewName}`);
+      if(view) view.style.display = 'block';
+      document.getElementById('mainSidebar').classList.remove('open');
+      document.getElementById('sidebarBackdrop').classList.remove('active');
+      forceRender();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function render() {
-      const filtered = state.records.filter(r => {
-        const matchesQuery = r.question.toLowerCase().includes(state.query);
-        const matchesTopic = state.activeFilter === "all" || r.categoryId === state.activeFilter;
-        return matchesQuery && matchesTopic;
+    function init() {
+      load();
+      document.body.setAttribute("data-theme", localStorage.getItem(THEME_KEY) || "dark");
+
+      document.getElementById("segregateBtn").addEventListener("click", () => {
+        const text = document.getElementById("questionInput").value;
+        const qs = text.split('\n').filter(l => l.trim().length > 10);
+        addQuestions(qs);
+        document.getElementById("questionInput").value = "";
+      });
+
+      document.getElementById("sampleBtn").addEventListener("click", () => {
+        document.getElementById("questionInput").value = "How to handle stale element exception?\nWhat is Page Object Model?\nHow to perform API testing in Selenium?";
+        document.getElementById("segregateBtn").click();
+      });
+
+      document.getElementById("fetchLinkedinBtn").addEventListener("click", fetchLinkedIn);
+      document.getElementById("extractLinkedinBtn").addEventListener("click", extractLinkedIn);
+
+      document.getElementById("exportCsvBtn").addEventListener("click", exportCSV);
+      document.getElementById("exportPdfBtn").addEventListener("click", exportPDF);
+      document.getElementById("themeToggleBtn").addEventListener("click", () => {
+        const theme = document.body.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        document.body.setAttribute("data-theme", theme);
+        localStorage.setItem(THEME_KEY, theme);
+      });
+      document.getElementById("refreshBtn").addEventListener("click", () => window.location.reload());
+      
+      document.getElementById("mobileMenuBtn").addEventListener("click", () => {
+        document.getElementById('mainSidebar').classList.add('open');
+        document.getElementById('sidebarBackdrop').classList.add('active');
+      });
+      document.getElementById("sidebarBackdrop").addEventListener("click", () => {
+        document.getElementById('mainSidebar').classList.remove('open');
+        document.getElementById('sidebarBackdrop').classList.remove('active');
       });
       
-      els.totalQuestions.textContent = state.records.length;
-      els.readyQuestions.textContent = state.records.filter(r => r.status === 'ready').length;
-      const rp = state.records.length ? Math.round((state.records.filter(r => r.status === 'ready').length / state.records.length) * 100) : 0;
-      els.readinessScore.textContent = rp + "%";
-      els.readinessPercent.textContent = rp + "%";
-      els.readinessRing.style.background = `conic-gradient(var(--accent-blue) 0deg, #1e293b ${rp * 3.6}deg)`;
+      document.getElementById("searchInput").addEventListener("input", e => { state.query = e.target.value.toLowerCase(); forceRender(); });
+      document.getElementById("viewQuestionsBtn").addEventListener("click", () => switchView("tracker"));
+      document.getElementById("clearFilterBtn").addEventListener("click", () => { state.activeFilter = "all"; state.statusFilter = "all"; forceRender(); });
 
-      let registryHtml = "";
-      const groups = categories.filter(cat => filtered.some(r => r.categoryId === cat.id));
-
-      groups.forEach(cat => {
-        const catQns = filtered.filter(r => r.categoryId === cat.id);
-        registryHtml += `
-          <div class="topic-group-header"><span>${cat.title}</span><span style="font-size:12px; opacity:0.8;">${catQns.length} Questions</span></div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th><input type="checkbox" onclick="selectAllFiltered()"></th><th>Question</th><th>Status</th><th>Actions</th></tr></thead>
-              <tbody>
-                ${catQns.map(r => `
-                  <tr>
-                    <td style="text-align:center;"><input type="checkbox" class="custom-checkbox" ${state.selectedIds.has(String(r.id)) ? 'checked' : ''} onclick="toggleSelect(${r.id})"></td>
-                    <td>${r.question}</td>
-                    <td>
-                      <select onchange="updateStatus(${r.id}, this.value)" style="background:transparent; color:var(--text-main); font-size:12px; border:1px solid var(--glass-border);">
-                        <option value="new" ${r.status==='new'?'selected':''}>New</option>
-                        <option value="studying" ${r.status==='studying'?'selected':''}>Studying</option>
-                        <option value="ready" ${r.status==='ready'?'selected':''}>Ready</option>
-                      </select>
-                    </td>
-                    <td>
-                      <button class="star-btn ${r.starred?'star-active':''}" onclick="toggleStar(${r.id})">${r.starred?'★':'☆'}</button>
-                      <button class="btn btn-danger" style="padding:2px 5px;" onclick="removeQ(${r.id})">🗑</button>
-                    </td>
-                  </tr>`).join("")}
-              </tbody>
-            </table>
-          </div>`;
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchView(btn.dataset.view));
       });
 
-      els.registryContent.innerHTML = registryHtml;
-      els.trackerEmpty.style.display = filtered.length ? "none" : "block";
-      els.activityFeed.innerHTML = state.activity.map(a => `<div class="glass-panel" style="padding:10px; font-size:12px; display:flex; justify-content:space-between;"><span>${a.msg}</span><span style="opacity:0.5">${a.time}</span></div>`).join("");
-      renderDistribution();
+      forceRender();
     }
 
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        document.querySelectorAll('.app-view').forEach(v => v.style.display = 'none');
-        document.getElementById(`view-${btn.dataset.view}`).style.display = 'block';
-        state.activeFilter = "all";
-        els.mainSidebar.classList.remove('open');
-        render();
-      });
-    });
-
-    els.segregateBtn.addEventListener("click", () => {
-      const text = els.questionInput.value;
-      const qs = text.split('\n').filter(l => l.trim().length > 10);
-      addQuestions(qs);
-      els.questionInput.value = "";
-    });
-
-    els.sampleBtn.addEventListener("click", () => {
-      els.questionInput.value = "How to handle stale element exception?\nWhat is Page Object Model?\nHow to perform API testing in Selenium?";
-      els.segregateBtn.click();
-    });
-
-    els.exportCsvBtn.addEventListener("click", exportCSV);
-    els.exportPdfBtn.addEventListener("click", exportPDF);
-    els.themeToggleBtn.addEventListener("click", () => {
-      const theme = document.body.getAttribute("data-theme") === "dark" ? "light" : "dark";
-      document.body.setAttribute("data-theme", theme);
-      localStorage.setItem(THEME_KEY, theme);
-    });
-
-    els.mobileMenuBtn.addEventListener("click", () => els.mainSidebar.classList.toggle("open"));
-    els.searchInput.addEventListener("input", e => { state.query = e.target.value.toLowerCase(); render(); });
-    els.viewQuestionsBtn.addEventListener("click", () => { document.querySelector('[data-view="tracker"]').click(); });
-    els.clearFilterBtn.addEventListener("click", () => { state.activeFilter = "all"; render(); });
-
-    load();
-    document.body.setAttribute("data-theme", localStorage.getItem(THEME_KEY) || "dark");
-    render();
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
   </script>
 </body>
 </html>
